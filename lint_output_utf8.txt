@@ -1,0 +1,37 @@
+﻿
+> schooliq@0.1.0 lint
+> eslint
+
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\app\(auth)\login\page.tsx
+   46:14  warning  'err' is defined but never used                                  @typescript-eslint/no-unused-vars
+  130:16  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\app\(dashboard)\students\[id]\page.tsx
+  11:10  warning  'useParams' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\components\features\student\overview-tab.tsx
+  3:42  warning  'BookOpen' is defined but never used      @typescript-eslint/no-unused-vars
+  6:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\components\features\student\profile-header.tsx
+  5:23  warning  'MapPin' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\components\layout\topbar.tsx
+  3:24  warning  'UserCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\components\ui\avatar.tsx
+  23:3  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  23:3  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images                                                                                                                                                                                jsx-a11y/alt-text
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\components\ui\input.tsx
+  4:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\mocks\data.ts
+  36:35  warning  'subjectId' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Krishil Agrawal\Desktop\Startups\School Services\SchoolIQ\schooliq\services\api.ts
+  59:25  warning  'data' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 12 problems (3 errors, 9 warnings)
+
