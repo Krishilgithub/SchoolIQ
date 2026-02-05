@@ -30,6 +30,7 @@ export default function RootLayout({
           inter.variable,
           outfit.variable,
         )}
+        suppressHydrationWarning
       >
         <Providers>{children}</Providers>
       </body>

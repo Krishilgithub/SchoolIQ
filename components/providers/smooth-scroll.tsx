@@ -24,7 +24,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div data-scroll-container ref={scrollRef}>
+    <div data-scroll-container ref={scrollRef} suppressHydrationWarning>
       {children}
     </div>
   );
