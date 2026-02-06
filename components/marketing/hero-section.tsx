@@ -2,38 +2,10 @@
 import React, { useRef } from "react";
 import { Spotlight } from "./spotlight";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  PlayCircle,
-  BarChart3,
-  Users,
-  Wallet,
-  GraduationCap,
-} from "lucide-react";
+import { ArrowRight, PlayCircle } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { AdminDashboardWidget } from "./mock-ui";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FloatingBadge = ({ icon: Icon, label, value, color, delay }: any) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20, scale: 0.8 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    transition={{ delay, duration: 0.5 }}
-    className="absolute hidden md:flex items-center gap-3 bg-white/90 backdrop-blur-md border border-neutral-200 p-3 rounded-xl shadow-xl z-20"
-    style={{
-      boxShadow: `0 10px 30px -10px rgba(0,0,0,0.1)`,
-    }}
-  >
-    <div className={`p-2 rounded-lg ${color} bg-opacity-10 text-white`}>
-      <Icon size={20} className={color.replace("bg-", "text-")} />
-    </div>
-    <div>
-      <div className="text-xs text-neutral-500 font-medium">{label}</div>
-      <div className="text-sm font-bold text-neutral-900">{value}</div>
-    </div>
-  </motion.div>
-);
+import { MockDashboard } from "./mock-ui";
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,93 +96,8 @@ export function HeroSection() {
             }}
             className="relative"
           >
-            {/* Main Dashboard Window */}
-            <div className="rounded-2xl border border-neutral-200 bg-white p-2 ring-1 ring-neutral-900/5 shadow-2xl relative z-10">
-              <div className="rounded-xl bg-neutral-50 border border-neutral-200 w-full overflow-hidden relative min-h-[500px] md:min-h-[600px] flex">
-                {/* Simulated Sidebar */}
-                <div className="w-64 border-r border-neutral-200 bg-white hidden md:flex flex-col p-4 gap-4">
-                  <div className="flex items-center gap-2 mb-4 px-2">
-                    <div className="h-8 w-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-brand-500/20">
-                      IQ
-                    </div>
-                    <div className="h-4 w-24 bg-neutral-100 rounded" />
-                  </div>
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className="h-9 w-full rounded-lg bg-neutral-50 border border-neutral-100"
-                    />
-                  ))}
-                </div>
-
-                {/* Main Content Area */}
-                <div className="flex-1 p-6 bg-neutral-50/50">
-                  {/* Header */}
-                  <div className="flex justify-between items-center mb-8">
-                    <div>
-                      <h3 className="text-neutral-900 text-xl font-bold font-heading">
-                        Dashboard
-                      </h3>
-                      <p className="text-neutral-500 text-sm">
-                        Welcome back, Admin
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="h-10 w-10 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center text-neutral-400">
-                        <Users size={18} />
-                      </div>
-                      <div className="h-10 w-10 rounded-full bg-brand-50 border border-brand-100 shadow-sm flex items-center justify-center text-brand-600 font-bold">
-                        A
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Grid of Widgets */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="col-span-2 shadow-sm rounded-xl">
-                      <AdminDashboardWidget />
-                    </div>
-                    <div className="space-y-6">
-                      <div className="h-40 w-full rounded-xl bg-white border border-neutral-200 p-5 shadow-sm flex flex-col justify-between group hover:border-brand-200 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="p-2.5 bg-purple-50 rounded-xl text-purple-600">
-                            <Wallet size={20} />
-                          </div>
-                          <span className="text-xs font-semibold bg-green-50 text-green-700 px-2 py-1 rounded-full border border-green-100">
-                            +12%
-                          </span>
-                        </div>
-                        <div>
-                          <div className="text-neutral-500 text-sm mb-1 font-medium">
-                            Total Revenue
-                          </div>
-                          <div className="text-neutral-900 text-3xl font-bold tracking-tight">
-                            $124k
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-40 w-full rounded-xl bg-white border border-neutral-200 p-5 shadow-sm flex flex-col justify-between group hover:border-brand-200 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="p-2.5 bg-green-50 rounded-xl text-green-600">
-                            <Users size={20} />
-                          </div>
-                          <span className="text-xs font-semibold bg-green-50 text-green-700 px-2 py-1 rounded-full border border-green-100">
-                            +4%
-                          </span>
-                        </div>
-                        <div>
-                          <div className="text-neutral-500 text-sm mb-1 font-medium">
-                            Attendance
-                          </div>
-                          <div className="text-neutral-900 text-3xl font-bold tracking-tight">
-                            98.2%
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="rounded-2xl border border-neutral-200 bg-white p-2 ring-1 ring-neutral-900/5 shadow-2xl relative z-10 w-full h-[600px] md:h-[700px]">
+              <MockDashboard />
             </div>
 
             {/* Shadow/Glow under the dashboard - Orange/Warm */}

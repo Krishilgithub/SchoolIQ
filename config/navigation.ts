@@ -65,6 +65,21 @@ export const NAVIGATION_CONFIG: Record<Role, NavGroup[]> = {
       ],
     },
     {
+      title: "Intelligence",
+      items: [
+        {
+          title: "Analytics",
+          href: "/analytics",
+          icon: PieChart,
+        },
+        {
+          title: "Risk & Warning",
+          href: "/analytics/risk",
+          icon: Shield,
+        },
+      ],
+    },
+    {
       title: "Communication",
       items: [
         {
