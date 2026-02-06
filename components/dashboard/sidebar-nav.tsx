@@ -87,7 +87,7 @@ export function Sidebar({ className }: SidebarProps) {
                                   : "hover:text-orange-600",
                               )}
                             >
-                              <Link href={item.href}>
+                              <Link href={item.href || "#"}>
                                 {Icon && (
                                   <Icon
                                     className={cn(
@@ -175,7 +175,7 @@ export function MobileSidebar() {
                         )}
                         onClick={() => setOpen(false)}
                       >
-                        <Link href={item.href}>
+                        <Link href={item.href || "#"}>
                           {Icon && <Icon className="mr-2 h-4 w-4" />}
                           {item.title}
                         </Link>

@@ -12,6 +12,8 @@ export interface DashboardMetric {
   icon?: any;
 }
 
+export type MetricItem = DashboardMetric;
+
 export const SCHOOL_ADMIN_METRICS: DashboardMetric[] = [
   {
     id: "total-students",

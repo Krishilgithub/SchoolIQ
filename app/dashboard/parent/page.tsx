@@ -6,8 +6,6 @@ import { PARENT_METRICS } from "@/services/mocks/student-parent-data";
 import { FeeStatusCard } from "@/components/dashboard/widgets/parent/fee-status";
 import { Announcements } from "@/components/dashboard/widgets/announcements";
 import { RecentGrades } from "@/components/dashboard/widgets/student/recent-grades"; // Reusing for Child's grades
-import { AttendanceChart } from "@/components/dashboard/widgets/chart-card"; // Placeholder for re-use if possible, or create specific
-import { TodaysSchedule } from "@/components/dashboard/widgets/teacher/todays-schedule"; // Reuse generic schedule style if needed, or specific child schedule
 
 const container = {
   hidden: { opacity: 0 },

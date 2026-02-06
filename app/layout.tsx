@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+// import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 // import { Toaster } from "@/components/ui/sonner"; // we will create this later
 // import { ThemeProvider } from "@/components/features/theme-provider"; // we will create this later
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+// const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const inter = { variable: "font-sans" };
+const outfit = { variable: "font-sans" };
 
 export const metadata: Metadata = {
   title: "SchoolIQ - Intelligent School Management",

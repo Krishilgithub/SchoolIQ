@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(1, { message: "Password is required" }),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean().optional(),
 });
 
 type LoginValues = z.infer<typeof loginSchema>;
