@@ -1,0 +1,23 @@
+
+> schooliq@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.0s
+  Running TypeScript ...
+Failed to compile.
+
+./app/dashboard/parent/page.tsx:9:10
+Type error: Module '"@/components/dashboard/widgets/chart-card"' has no exported member 'AttendanceChart'.
+
+[0m [90m  7 |[39m [36mimport[39m { [33mAnnouncements[39m } [36mfrom[39m [32m"@/components/dashboard/widgets/announcements"[39m[33m;[39m
+ [90m  8 |[39m [36mimport[39m { [33mRecentGrades[39m } [36mfrom[39m [32m"@/components/dashboard/widgets/student/recent-grades"[39m[33m;[39m [90m// Reusing for Child's grades[39m
+[31m[1m>[22m[39m[90m  9 |[39m [36mimport[39m { [33mAttendanceChart[39m } [36mfrom[39m [32m"@/components/dashboard/widgets/chart-card"[39m[33m;[39m [90m// Placeholder for re-use if possible, or create specific[39m
+ [90m    |[39m          [31m[1m^[22m[39m
+ [90m 10 |[39m [36mimport[39m { [33mTodaysSchedule[39m } [36mfrom[39m [32m"@/components/dashboard/widgets/teacher/todays-schedule"[39m[33m;[39m [90m// Reuse generic schedule style if needed, or specific child schedule[39m
+ [90m 11 |[39m
+ [90m 12 |[39m [36mconst[39m container [33m=[39m {[0m
+Next.js build worker exited with code: 1 and signal: null

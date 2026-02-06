@@ -1,0 +1,68 @@
+
+> schooliq@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./components/analytics/widgets/intervention-tracker.tsx:12:1
+Module not found: Can't resolve '@/components/ui/progress'
+[0m [90m 10 |[39m [36mimport[39m { [33mBadge[39m } [36mfrom[39m [32m"@/components/ui/badge"[39m[33m;[39m
+ [90m 11 |[39m [36mimport[39m { [33mAvatar[39m[33m,[39m [33mAvatarFallback[39m[33m,[39m [33mAvatarImage[39m } [36mfrom[39m [32m"@/components/ui/avatar"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 12 |[39m [36mimport[39m { [33mProgress[39m } [36mfrom[39m [32m"@/components/ui/progress"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 13 |[39m
+ [90m 14 |[39m [36mexport[39m [36mfunction[39m [33mInterventionTracker[39m() {
+ [90m 15 |[39m   [36mconst[39m interventions [33m=[39m [[0m
+
+Import map: aliased to relative './components/ui/progress' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/analytics/widgets/intervention-tracker.tsx [Client Component Browser]
+    ./app/analytics/interventions/page.tsx [Client Component Browser]
+    ./app/analytics/interventions/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/analytics/widgets/intervention-tracker.tsx [Client Component SSR]
+    ./app/analytics/interventions/page.tsx [Client Component SSR]
+    ./app/analytics/interventions/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/select.tsx:4:1
+Module not found: Can't resolve '@radix-ui/react-select'
+[0m [90m 2 |[39m
+ [90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mReact[39m [36mfrom[39m [32m"react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33m*[39m [36mas[39m [33mSelectPrimitive[39m [36mfrom[39m [32m"@radix-ui/react-select"[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 5 |[39m [36mimport[39m { [33mCheck[39m[33m,[39m [33mChevronDown[39m[33m,[39m [33mChevronUp[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+ [90m 6 |[39m
+ [90m 7 |[39m [36mimport[39m { cn } [36mfrom[39m [32m"@/lib/utils"[39m[33m;[39m[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./components/ui/select.tsx [Client Component Browser]
+    ./app/analytics/performance/page.tsx [Client Component Browser]
+    ./app/analytics/performance/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/select.tsx [Client Component SSR]
+    ./app/analytics/performance/page.tsx [Client Component SSR]
+    ./app/analytics/performance/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./components/analytics/widgets/intervention-tracker.tsx:12:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/select.tsx:4:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)

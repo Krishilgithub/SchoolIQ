@@ -1,6 +1,9 @@
 import { FilterDrawer } from "@/components/analytics/filters/filter-drawer";
 
-// ... existing imports
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { KPIGrid } from "@/components/analytics/widgets/kpi-grid";
+import { PerformanceHeatmap } from "@/components/analytics/widgets/performance-heatmap";
 
 export default function AnalyticsOverview() {
   return (
