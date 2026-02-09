@@ -12,12 +12,12 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="w-full min-h-screen lg:h-screen lg:overflow-hidden flex bg-neutral-50 dark:bg-neutral-950">
+    <div className="w-full min-h-screen lg:h-screen flex bg-neutral-50 dark:bg-neutral-950 lg:overflow-hidden">
       {/* Left Panel - Brand & Trust */}
       <BrandPanel />
 
-      {/* Right Panel - Auth Form */}
-      <div className="flex-1 flex flex-col relative w-full lg:w-1/2">
+      {/* Right Panel - Auth Form - Scrollable */}
+      <div className="flex-1 flex flex-col relative w-full lg:w-1/2 lg:h-screen lg:overflow-y-auto">
         {/* Decorative Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-96 h-96 bg-brand-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -41,10 +41,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <div className="absolute inset-0 bg-grid-slate/[0.05] bg-[size:40px_40px] pointer-events-none" />
 
           <motion.div
-            className="w-full max-w-md mx-auto relative z-10 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-2xl border border-neutral-200/50 dark:border-neutral-800/50 p-8 shadow-xl"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            className="w-full max-w-5xl mx-auto relative z-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {children}
           </motion.div>
