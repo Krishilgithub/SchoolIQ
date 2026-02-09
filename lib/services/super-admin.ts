@@ -83,7 +83,7 @@ export const superAdminService = {
     address?: string;
     adminEmail: string;
     adminName: string;
-  }) => {
+  }): Promise<{ school: any; user: any; temporaryPassword: string }> => {
     const supabase = createAdminClient();
 
     // Generate unique slug
@@ -127,10 +127,16 @@ export const superAdminService = {
     if (schoolError)
       throw new Error(`Failed to create school: ${schoolError.message}`);
 
-    // 2. Invite/Create Admin User
+    // 2. Create Admin User with temporary password
+    // Generate a secure temporary password
+    const temporaryPassword = `School${Math.random().toString(36).slice(-8)}@${Date.now().toString(36)}`;
+
     const { data: authUser, error: authError } =
-      await supabase.auth.admin.inviteUserByEmail(data.adminEmail, {
-        data: {
+      await supabase.auth.admin.createUser({
+        email: data.adminEmail,
+        password: temporaryPassword,
+        email_confirm: true, // Auto-confirm email
+        user_metadata: {
           full_name: data.adminName,
           role: "school_admin",
           school_id: school.id,
@@ -154,7 +160,7 @@ export const superAdminService = {
       throw new Error(`Failed to link admin to school: ${memberError.message}`);
     }
 
-    return { school, user: authUser.user };
+    return { school, user: authUser.user, temporaryPassword };
   },
 
   /**

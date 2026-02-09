@@ -1,6 +1,7 @@
 "use server";
 
 import { superAdminService } from "@/lib/services/super-admin";
+import { sendAdminCredentialsEmail } from "@/lib/services/email";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -17,6 +18,7 @@ const createSchoolSchema = z.object({
 export type CreateSchoolState = {
   success?: boolean;
   error?: string;
+  emailWarning?: string; // Warning if email failed but school was created
   fieldErrors?: {
     schoolName?: string[];
     slug?: string[];
@@ -49,10 +51,32 @@ export async function createSchoolAction(
   }
 
   try {
-    await superAdminService.createSchoolWithAdmin(validatedFields.data);
+    const result = await superAdminService.createSchoolWithAdmin(
+      validatedFields.data,
+    );
+
+    // Send email with credentials
+    const emailResult = await sendAdminCredentialsEmail({
+      adminEmail: validatedFields.data.adminEmail,
+      adminName: validatedFields.data.adminName,
+      schoolName: validatedFields.data.schoolName,
+      temporaryPassword: result.temporaryPassword,
+    });
+
+    // Log email result but don't fail the school creation
+    if (!emailResult.success) {
+      console.error("Failed to send credentials email:", emailResult.error);
+    }
+
     revalidatePath("/super-admin/schools");
     revalidatePath("/super-admin"); // Update overview stats
-    return { success: true };
+
+    return {
+      success: true,
+      emailWarning: !emailResult.success
+        ? "School created successfully, but failed to send credentials email. Please manually share login details."
+        : undefined,
+    };
   } catch (error: any) {
     console.error("Failed to create school:", error);
     return {

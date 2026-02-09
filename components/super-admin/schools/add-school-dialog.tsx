@@ -24,7 +24,13 @@ export function AddSchoolDialog() {
 
   useEffect(() => {
     if (state.success) {
-      toast.success("School created successfully");
+      if (state.emailWarning) {
+        toast.warning(state.emailWarning);
+      } else {
+        toast.success(
+          "School created successfully and credentials email sent!",
+        );
+      }
       setOpen(false);
     } else if (state.error) {
       toast.error(state.error);
