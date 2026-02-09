@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Building2,
@@ -67,6 +69,7 @@ const routes = [
 
 export function SuperAdminSidebar() {
   const pathname = usePathname();
+  const { signOut } = useAuth();
 
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-[#111827] text-white">
@@ -103,7 +106,16 @@ export function SuperAdminSidebar() {
           ))}
         </div>
       </div>
-      <div className="px-3 py-2">{/* Logout Button reused or custom */}</div>
+      <div className="px-3 py-2 border-t border-white/10">
+        <Button
+          variant="ghost"
+          onClick={() => signOut()}
+          className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10"
+        >
+          <LogOut className="h-5 w-5 mr-3" />
+          Logout
+        </Button>
+      </div>
     </div>
   );
 }

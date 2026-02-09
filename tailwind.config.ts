@@ -87,6 +87,7 @@ const config: Config = {
         scroll:
           "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
         shimmer: "shimmer 2s linear infinite",
+        blob: "blob 7s infinite",
       },
       keyframes: {
         "accordion-down": {
@@ -118,6 +119,20 @@ const config: Config = {
           },
           to: {
             backgroundPosition: "-200% 0",
+          },
+        },
+        blob: {
+          "0%": {
+            transform: "translate(0px, 0px) scale(1)",
+          },
+          "33%": {
+            transform: "translate(30px, -50px) scale(1.1)",
+          },
+          "66%": {
+            transform: "translate(-20px, 20px) scale(0.9)",
+          },
+          "100%": {
+            transform: "translate(0px, 0px) scale(1)",
           },
         },
         meteor: {

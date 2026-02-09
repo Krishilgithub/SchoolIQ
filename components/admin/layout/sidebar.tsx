@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/providers/auth-provider";
 import {
   BarChart3,
   Building2,
@@ -16,6 +17,7 @@ import {
   ShieldAlert,
   Users,
   Activity,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,7 @@ const sidebarItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <motion.aside
@@ -95,7 +98,19 @@ export function AdminSidebar() {
         })}
       </div>
 
-      <div className="p-4 border-t border-border/50">
+      <div className="p-4 border-t border-border/50 space-y-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "w-full text-destructive hover:text-destructive hover:bg-destructive/10",
+            collapsed ? "justify-center" : "justify-start",
+          )}
+          onClick={() => signOut()}
+        >
+          <LogOut className={cn("h-4 w-4", !collapsed && "mr-2")} />
+          {!collapsed && <span>Logout</span>}
+        </Button>
         <Button
           variant="ghost"
           size="sm"

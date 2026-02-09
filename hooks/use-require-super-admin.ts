@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 export function useRequireSuperAdmin() {
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +20,7 @@ export function useRequireSuperAdmin() {
         } = await supabase.auth.getSession();
 
         if (!session) {
+          toast.error("Please sign in to continue");
           router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
           return;
         }
@@ -30,13 +32,15 @@ export function useRequireSuperAdmin() {
           .single();
 
         if (!profile?.is_super_admin) {
-          router.push("/dashboard");
+          toast.error("Super admin access required");
+          router.push("/unauthorized");
           return;
         }
 
         setIsSuperAdmin(true);
       } catch (error) {
         console.error("Auth check failed:", error);
+        toast.error("Authentication failed");
         router.push("/auth/login");
       } finally {
         setIsLoading(false);
