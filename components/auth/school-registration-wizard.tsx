@@ -232,8 +232,7 @@ export function SchoolRegistrationWizard() {
           transition={{ duration: 0.5 }}
           className="inline-flex items-center justify-center relative mb-6"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-orange-500 blur-2xl opacity-20 animate-pulse" />
-          <div className="relative p-4 rounded-2xl bg-gradient-to-br from-brand-500 to-orange-500 text-white shadow-lg shadow-brand-500/20">
+          <div className="relative p-4 rounded-2xl bg-gradient-to-br from-brand-500 to-orange-500 text-white shadow-md">
             <Building2 className="w-8 h-8" />
           </div>
         </motion.div>
@@ -263,7 +262,7 @@ export function SchoolRegistrationWizard() {
           {/* Connecting Line */}
           <div className="absolute top-1/2 left-0 w-full h-1 bg-neutral-200/50 dark:bg-neutral-800/50 -z-0 -translate-y-1/2 rounded-full" />
           <motion.div
-            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-brand-500 via-brand-600 to-orange-500 -z-0 -translate-y-1/2 rounded-full origin-left shadow-lg shadow-brand-500/30"
+            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-brand-500 via-brand-600 to-orange-500 -z-0 -translate-y-1/2 rounded-full origin-left"
             initial={{ width: "0%" }}
             animate={{
               width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
@@ -281,26 +280,15 @@ export function SchoolRegistrationWizard() {
                 <motion.div
                   initial={false}
                   animate={{
-                    scale: isActive ? 1.15 : 1,
+                    scale: isActive ? 1.1 : 1,
                   }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   className="relative"
                 >
-                  {(isActive || isCompleted) && (
-                    <motion.div
-                      layoutId="step-glow"
-                      className="absolute inset-0 bg-gradient-to-r from-brand-500 to-orange-500 blur-lg opacity-40 rounded-full"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
-                  )}
                   <div
                     className={`relative w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                       isActive || isCompleted
-                        ? "bg-gradient-to-br from-brand-500 to-orange-500 text-white shadow-lg shadow-brand-500/30"
+                        ? "bg-gradient-to-br from-brand-500 to-orange-500 text-white shadow-md"
                         : "bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500"
                     }`}
                   >
@@ -335,12 +323,9 @@ export function SchoolRegistrationWizard() {
 
       {/* Form Area */}
       <div className="w-full max-w-4xl mx-auto">
-        {/* Modern Card with Gradient Border */}
-        <div className="relative group">
-          {/* Gradient Border Effect */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-brand-500 via-orange-500 to-brand-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
-
-          <div className="relative bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-3xl border border-neutral-200/50 dark:border-neutral-800/50 p-8 md:p-12">
+        {/* Modern Card */}
+        <div className="relative">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm p-8 md:p-12">
             <div className="relative min-h-[480px]">
               <AnimatePresence initial={false} custom={direction} mode="wait">
                 {/* Step 1: School Info */}

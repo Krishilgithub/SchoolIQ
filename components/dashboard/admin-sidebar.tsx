@@ -325,7 +325,7 @@ export function AdminSidebar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
             <DropdownMenuItem
-              onClick={() => signOut()}
+              onClick={async () => await signOut()}
               className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium"
             >
               <LogOut className="mr-2 h-4 w-4" />

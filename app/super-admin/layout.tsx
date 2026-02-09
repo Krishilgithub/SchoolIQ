@@ -34,9 +34,9 @@ export default async function SuperAdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 overflow-hidden">
+    <div className="flex min-h-screen bg-neutral-50 overflow-hidden">
       {/* Fixed Sidebar */}
-      <aside className="hidden w-[280px] flex-col border-r bg-slate-900 fixed inset-y-0 left-0 z-50 lg:flex">
+      <aside className="hidden w-[280px] flex-col border-r bg-white fixed inset-y-0 left-0 z-50 lg:flex">
         <SuperAdminSidebar />
       </aside>
 

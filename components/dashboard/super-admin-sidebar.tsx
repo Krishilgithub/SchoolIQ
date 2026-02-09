@@ -2,19 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Building2,
   Users,
   BarChart3,
   Settings,
   LifeBuoy,
-  Shield,
   LogOut,
   ChevronRight,
   School,
-  Globe,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/marketing/logo";
@@ -69,66 +67,92 @@ export function SuperAdminSidebar() {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="flex h-full w-[280px] flex-col bg-white border-r border-gray-200/80 shadow-sm [&::-webkit-scrollbar]:hidden">
-      {/* Header with refined spacing */}
-      <div className="flex h-16 items-center px-6 border-b border-gray-100">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-md">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-900 tracking-tight leading-none">
-              SchoolIQ
-            </span>
-            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mt-0.5">
-              Super Admin
-            </span>
-          </div>
-        </div>
+    <div className="flex h-full w-[280px] flex-col bg-gradient-to-b from-white via-white to-orange-50/30 border-r border-gray-200/80 shadow-xl [&::-webkit-scrollbar]:hidden relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] via-transparent to-transparent pointer-events-none" />
+
+      {/* Header with refined spacing and gradient */}
+      <div className="flex h-16 items-center px-6 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/30 relative z-10">
+        <Logo
+          textClassName="text-gray-900 scale-110 origin-left font-bold"
+          iconClassName="text-orange-600"
+        />
+        <motion.span
+          className="ml-2 text-[10px] font-bold bg-gradient-to-r from-orange-500 to-orange-600 text-white px-2.5 py-1 rounded-md shadow-sm uppercase tracking-wide"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+        >
+          Super Admin
+        </motion.span>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-5 px-3 [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 overflow-y-auto py-5 px-3 [&::-webkit-scrollbar]:hidden relative z-10">
         {/* Main Menu with improved spacing */}
-        <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        <motion.div
+          className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           Platform Management
-        </div>
+        </motion.div>
         <nav className="space-y-0.5 mb-6">
-          {mainNav.map((item) => {
+          {mainNav.map((item, index) => {
             const isActive = pathname === item.href;
             return (
-              <Link
+              <motion.div
                 key={item.href}
-                href={item.href}
-                className={cn(
-                  "group flex items-center justify-between rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-gradient-to-r from-blue-50 to-blue-50/50 text-blue-700 shadow-sm border border-blue-100"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
-                )}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index }}
               >
-                <div className="flex items-center gap-3">
-                  <div
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-300",
+                    isActive
+                      ? "bg-gradient-to-r from-orange-500/10 via-orange-500/[0.08] to-transparent text-orange-700 shadow-sm"
+                      : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900 hover:shadow-sm hover:translate-x-0.5",
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-r-full shadow-lg shadow-orange-500/30"
+                      layoutId="activeIndicator"
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+
+                  <motion.div
                     className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-md transition-all",
+                      "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300",
                       isActive
-                        ? "bg-blue-100"
-                        : "bg-gray-100/50 group-hover:bg-gray-100",
+                        ? "bg-gradient-to-br from-orange-100 to-orange-50"
+                        : "bg-gray-100/60 group-hover:bg-gray-100",
                     )}
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     <item.icon
                       className={cn(
-                        "h-[18px] w-[18px] transition-colors",
+                        "h-[17px] w-[17px] transition-colors duration-300",
                         isActive
-                          ? "text-blue-600"
+                          ? "text-orange-600"
                           : "text-gray-500 group-hover:text-gray-700",
                       )}
                     />
-                  </div>
+                  </motion.div>
+
                   <span className={cn(isActive && "font-semibold")}>
                     {item.title}
                   </span>
-                </div>
-              </Link>
+                </Link>
+              </motion.div>
             );
           })}
         </nav>
@@ -137,44 +161,70 @@ export function SuperAdminSidebar() {
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-4" />
 
         {/* System */}
-        <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        <motion.div
+          className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           System Administration
-        </div>
+        </motion.div>
         <nav className="space-y-0.5 mb-6">
-          {secondaryNav.map((item) => {
+          {secondaryNav.map((item, index) => {
             const isActive = pathname === item.href;
             return (
-              <Link
+              <motion.div
                 key={item.href}
-                href={item.href}
-                className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-gradient-to-r from-blue-50 to-blue-50/50 text-blue-700 shadow-sm border border-blue-100"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
-                )}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index }}
               >
-                <div
+                <Link
+                  href={item.href}
                   className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-md transition-all",
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-300",
                     isActive
-                      ? "bg-blue-100"
-                      : "bg-gray-100/50 group-hover:bg-gray-100",
+                      ? "bg-gradient-to-r from-orange-500/10 via-orange-500/[0.08] to-transparent text-orange-700 shadow-sm"
+                      : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900 hover:shadow-sm hover:translate-x-0.5",
                   )}
                 >
-                  <item.icon
+                  {isActive && (
+                    <motion.div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-r-full shadow-lg shadow-orange-500/30"
+                      layoutId="activeIndicator"
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+
+                  <motion.div
                     className={cn(
-                      "h-[18px] w-[18px] transition-colors",
+                      "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300",
                       isActive
-                        ? "text-blue-600"
-                        : "text-gray-500 group-hover:text-gray-700",
+                        ? "bg-gradient-to-br from-orange-100 to-orange-50"
+                        : "bg-gray-100/60 group-hover:bg-gray-100",
                     )}
-                  />
-                </div>
-                <span className={cn(isActive && "font-semibold")}>
-                  {item.title}
-                </span>
-              </Link>
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <item.icon
+                      className={cn(
+                        "h-[17px] w-[17px] transition-colors duration-300",
+                        isActive
+                          ? "text-orange-600"
+                          : "text-gray-500 group-hover:text-gray-700",
+                      )}
+                    />
+                  </motion.div>
+
+                  <span className={cn(isActive && "font-semibold")}>
+                    {item.title}
+                  </span>
+                </Link>
+              </motion.div>
             );
           })}
         </nav>
@@ -187,7 +237,7 @@ export function SuperAdminSidebar() {
             <button className="flex items-center gap-3 w-full rounded-xl p-2.5 hover:bg-white hover:shadow-sm transition-all duration-200 text-left border border-transparent hover:border-gray-200/50">
               <Avatar className="h-10 w-10 border-2 border-white shadow-sm ring-1 ring-gray-200/50">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-sm">
+                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-sm shadow-orange-500/20">
                   {user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

@@ -159,8 +159,8 @@ export const superAdminService = {
 
     if (error) throw error;
 
-    // Explicitly cast to include the new fields if they aren't in the generated types yet
-    return data as unknown as SuperAdminUser[];
+    // Explicitly cast to include the new fields and ensure serialization
+    return JSON.parse(JSON.stringify(data)) as unknown as SuperAdminUser[];
   },
 
   /**

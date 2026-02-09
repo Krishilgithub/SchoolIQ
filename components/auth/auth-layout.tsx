@@ -17,11 +17,20 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       <BrandPanel />
 
       {/* Right Panel - Auth Form - Scrollable */}
-      <div className="flex-1 flex flex-col relative w-full lg:w-1/2 lg:h-screen lg:overflow-y-auto">
+      <div className="flex-1 flex flex-col relative w-full lg:w-1/2 lg:h-screen lg:overflow-y-auto scrollbar-hide">
+        <style jsx>{`
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         {/* Decorative Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-50/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-50/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
         </div>
 
         {/* Mobile Header */}

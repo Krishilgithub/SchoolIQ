@@ -216,7 +216,7 @@ export function SuperAdminSidebar() {
 
         <Button
           variant="ghost"
-          onClick={() => signOut()}
+          onClick={async () => await signOut()}
           className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all duration-300 font-medium group"
         >
           <motion.div
