@@ -1,17 +1,15 @@
-import { Metadata } from "next";
-import { AuthLayout } from "@/components/auth/auth-layout";
-import { LoginForm } from "@/components/auth/login-form";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Login | SchoolIQ",
-  description:
-    "Sign in to your SchoolIQ account to manage your school operations.",
-};
+import { Suspense } from "react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { NewLoginForm } from "@/components/auth/new-login-form";
 
 export default function LoginPage() {
   return (
     <AuthLayout>
-      <LoginForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <NewLoginForm />
+      </Suspense>
     </AuthLayout>
   );
 }

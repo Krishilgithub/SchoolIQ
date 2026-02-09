@@ -126,7 +126,7 @@
     /* Border: #E5E7EB (Gray-200) */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 25 95% 53%;
+    --ring: 217 91% 60%; /* Blue instead of orange */
 
     --radius: 0.5rem;
 

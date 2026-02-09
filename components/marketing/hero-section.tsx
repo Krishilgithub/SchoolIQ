@@ -65,7 +65,7 @@ export function HeroSection() {
                 size="lg"
                 className="w-full sm:w-auto h-12 rounded-full bg-brand-600 px-8 text-base font-semibold text-white shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:bg-brand-700 hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] hover:-translate-y-0.5 transition-all"
               >
-                Get Started
+                Register Your School
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>

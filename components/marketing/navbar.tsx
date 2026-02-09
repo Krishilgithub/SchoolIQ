@@ -72,7 +72,7 @@ export function Navbar() {
             </Link>
             <Link href="/auth/register" className="hidden md:block">
               <Button className="bg-brand-600 hover:bg-brand-700 text-white rounded-full px-6 font-semibold shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 transition-all hover:-translate-y-0.5">
-                Book Demo
+                Get Started
               </Button>
             </Link>
             <button
@@ -118,7 +118,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
             >
               <Button className="w-full bg-brand-600 hover:bg-brand-700 text-lg h-12 rounded-full text-white shadow-lg shadow-brand-500/30 font-semibold">
-                Book Demo
+                Get Started
               </Button>
             </Link>
           </div>

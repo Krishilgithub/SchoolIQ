@@ -1,9 +1,7 @@
-import { DashboardShell } from "@/components/dashboard/shell";
-
 export default function AnalyticsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return <div className="flex flex-col min-h-screen">{children}</div>;
 }

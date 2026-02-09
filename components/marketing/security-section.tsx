@@ -17,8 +17,8 @@ export function SecuritySection() {
             </h2>
             <p className="text-neutral-400 text-lg mb-8">
               We adhere to the strictest data privacy standards. Your
-              institution's data is encrypted, backed up, and compliant with
-              global regulations.
+              institution&apos;s data is encrypted, backed up, and compliant
+              with global regulations.
             </p>
 
             <div className="grid grid-cols-2 gap-6">

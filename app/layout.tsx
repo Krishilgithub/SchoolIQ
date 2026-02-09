@@ -17,6 +17,9 @@ export const metadata: Metadata = {
 
 import { Providers } from "@/app/providers";
 
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 // ... fonts and metadata ...
 
 export default function RootLayout({
@@ -34,7 +37,11 @@ export default function RootLayout({
         )}
         suppressHydrationWarning
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <Analytics />
+          <SpeedInsights />
+        </Providers>
       </body>
     </html>
   );
