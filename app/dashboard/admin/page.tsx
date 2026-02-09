@@ -100,7 +100,7 @@ export default function SchoolAdminDashboard() {
               description="Student attendance overview for the current week"
             >
               <div className="h-[350px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={350}>
                   <BarChart data={ATTENDANCE_DATA}>
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -156,7 +156,7 @@ export default function SchoolAdminDashboard() {
               description="Average grades across departments"
             >
               <div className="h-[350px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={350}>
                   <RadarChart
                     cx="50%"
                     cy="50%"

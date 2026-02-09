@@ -6,6 +6,10 @@ import { z } from "zod";
 
 const createSchoolSchema = z.object({
   schoolName: z.string().min(3, "School name must be at least 3 characters"),
+  slug: z.string().optional(),
+  schoolType: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
   adminEmail: z.string().email("Invalid email address"),
   adminName: z.string().min(2, "Admin name must be at least 2 characters"),
 });
@@ -15,6 +19,10 @@ export type CreateSchoolState = {
   error?: string;
   fieldErrors?: {
     schoolName?: string[];
+    slug?: string[];
+    schoolType?: string[];
+    phone?: string[];
+    address?: string[];
     adminEmail?: string[];
     adminName?: string[];
   };
@@ -26,6 +34,10 @@ export async function createSchoolAction(
 ): Promise<CreateSchoolState> {
   const validatedFields = createSchoolSchema.safeParse({
     schoolName: formData.get("schoolName"),
+    slug: formData.get("slug"),
+    schoolType: formData.get("schoolType"),
+    phone: formData.get("phone"),
+    address: formData.get("address"),
     adminEmail: formData.get("adminEmail"),
     adminName: formData.get("adminName"),
   });

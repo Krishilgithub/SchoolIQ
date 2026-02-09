@@ -13,6 +13,10 @@ export interface StatMetric {
 export interface DashboardSchool {
   id: string;
   name: string;
+  slug: string;
+  school_type: string;
+  logo_url: string | null;
+  subscription_status: string;
   plan: "Free" | "Pro" | "Enterprise";
   status: "Active" | "Suspended" | "Pending";
   users: number;
@@ -35,6 +39,16 @@ export interface PlatformHealth {
   dbLoad: number; // %
   errorRate: number; // %
   queueDepth: number;
+  storageUsage?: number; // GB, optional field
+}
+
+export interface AuditLog {
+  id: string;
+  operation: string;
+  table_name: string;
+  created_at: string;
+  school?: { name: string } | null;
+  changed_by?: { email: string } | null;
 }
 
 export interface SuperAdminUser {
@@ -63,20 +77,49 @@ export const superAdminService = {
    */
   createSchoolWithAdmin: async (data: {
     schoolName: string;
+    slug?: string;
+    schoolType?: string;
+    phone?: string;
+    address?: string;
     adminEmail: string;
     adminName: string;
   }) => {
     const supabase = createAdminClient();
+
+    // Generate unique slug
+    let finalSlug = data.slug || slugify(data.schoolName);
+    let slugExists = true;
+    let counter = 1;
+
+    // Check if slug exists and append number if needed
+    while (slugExists) {
+      const { data: existingSchool } = await supabase
+        .from("schools")
+        .select("id")
+        .eq("slug", finalSlug)
+        .single();
+
+      if (!existingSchool) {
+        slugExists = false;
+      } else {
+        // Append counter to make it unique
+        finalSlug = `${data.slug || slugify(data.schoolName)}-${counter}`;
+        counter++;
+      }
+    }
 
     // 1. Create School
     const { data: school, error: schoolError } = await supabase
       .from("schools")
       .insert({
         name: data.schoolName,
-        slug: slugify(data.schoolName),
+        slug: finalSlug,
         contact_email: data.adminEmail,
         subscription_status: "active",
-        school_type: "k12", // Default for now
+        school_type:
+          (data.schoolType as "k12" | "higher_ed" | "vocational") || "k12",
+        phone: data.phone || null,
+        address: data.address || null,
       })
       .select()
       .single();
@@ -121,10 +164,63 @@ export const superAdminService = {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("schools")
-      .select("*, school_admins(count)");
+      .select("*, school_admins(user_id, role)");
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * Get a single school by ID
+   */
+  getSchoolById: async (schoolId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("schools")
+      .select("*, school_admins(user_id, role)")
+      .eq("id", schoolId)
+      .single();
+
+    if (error) return null;
+    return data;
+  },
+
+  /**
+   * Get all users for a specific school
+   */
+  getUsersBySchoolId: async (schoolId: string) => {
+    const supabase = createAdminClient();
+
+    // Fetch school admins first
+    const { data: admins, error: adminError } = await supabase
+      .from("school_admins")
+      .select("user_id, role")
+      .eq("school_id", schoolId);
+
+    if (adminError) throw adminError;
+
+    if (!admins || admins.length === 0) return [];
+
+    const userIds = admins.map((a) => a.user_id);
+
+    // Fetch profiles for these admins
+    const { data: profiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("id", userIds);
+
+    if (profileError) throw profileError;
+
+    // Merge data
+    const users = profiles.map((profile) => {
+      const adminInfo = admins.find((a) => a.user_id === profile.id);
+      return {
+        ...profile,
+        school_admins: adminInfo ? [adminInfo] : [],
+      };
+    });
+
+    return users as unknown as SuperAdminUser[];
   },
 
   /**
@@ -138,6 +234,25 @@ export const superAdminService = {
       .eq("id", schoolId);
 
     if (error) throw error;
+  },
+
+  /**
+   * Update school details
+   */
+  updateSchool: async (
+    schoolId: string,
+    updates: { name?: string; slug?: string; contact_email?: string },
+  ) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("schools")
+      .update(updates)
+      .eq("id", schoolId)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update school: ${error.message}`);
+    return data;
   },
 
   /**
@@ -175,10 +290,15 @@ export const superAdminService = {
       .select("*", { count: "exact", head: true })
       .eq("subscription_status", "active");
 
-    // 2. Total Students Count (using profiles for now as proxy or students table if populated)
+    // 2. Total Users Count (using profiles for now as proxy)
     const { count: studentsCount } = await supabase
-      .from("profiles") // Or "students"
+      .from("profiles")
       .select("*", { count: "exact", head: true });
+
+    // 3. Calculate MRR (Mock logic based on assumption: $100/school for 'Pro', $0 for 'Free')
+    // Ideally we'd join with a plans table. For now, we'll estimate.
+    // Let's assume all active schools are on a $99/mo plan for this MVP calculation if plan info is missing.
+    const estimatedMRR = (activeSchoolsCount || 0) * 99;
 
     // Mock history for charts
     const generateHistory = () =>
@@ -200,10 +320,10 @@ export const superAdminService = {
         history: generateHistory(),
       },
       {
-        label: "MRR",
-        value: "$0.00", // Hardcoded for now
-        change: 0,
-        trend: "neutral",
+        label: "Monthly Revenue",
+        value: `$${estimatedMRR.toLocaleString()}`,
+        change: 5.4,
+        trend: "up",
         history: generateHistory(),
       },
       {
@@ -215,12 +335,47 @@ export const superAdminService = {
       },
       {
         label: "Open Tickets",
-        value: 0,
+        value: 0, // Placeholder until ticketing system is connected
         change: 0,
         trend: "neutral",
         history: generateHistory(),
       },
     ];
+  },
+
+  /**
+   * Impersonate a user
+   * WARNING: This is a sensitive operation.
+   * For the MVP, this will return a URL or indicator to the frontend to handle the session switch
+   * if using client-side auth, or we'd generate a magic link.
+   *
+   * For now, we'll just return a success flags to simulate the action.
+   */
+  impersonateUser: async (userId: string) => {
+    const supabase = createAdminClient();
+
+    // Check if user exists
+    const { data: user, error } = await supabase.auth.admin.getUserById(userId);
+    if (error || !user) throw new Error("User not found");
+
+    // In a real implementation with Supabase, we might generate a magic link
+    // that the admin can click to sign in as that user.
+    const { data: linkData, error: linkError } =
+      await supabase.auth.admin.generateLink({
+        type: "magiclink",
+        email: user.user.email ?? "",
+      });
+
+    if (linkError)
+      throw new Error(
+        `Failed to generate impersonation link: ${linkError.message}`,
+      );
+
+    return {
+      success: true,
+      redirectUrl: linkData.properties?.action_link,
+      message: "Impersonation link generated",
+    };
   },
 
   getPlatformHealth: async (): Promise<PlatformHealth> => {
@@ -230,7 +385,24 @@ export const superAdminService = {
       dbLoad: 32 + Math.random() * 15,
       errorRate: Math.random() * 0.5,
       queueDepth: Math.floor(Math.random() * 50),
+      storageUsage: 450 + Math.floor(Math.random() * 100), // Mock storage in GB
     };
+  },
+
+  getRecentAuditLogs: async (): Promise<AuditLog[]> => {
+    // Mock audit logs for now - in production this would query the audit_logs table
+    const mockOperations = ["INSERT", "UPDATE", "DELETE"];
+    const mockTables = ["schools", "profiles", "students", "classes", "grades"];
+
+    return Array.from({ length: 5 }, (_, i) => ({
+      id: `audit-${i}`,
+      operation:
+        mockOperations[Math.floor(Math.random() * mockOperations.length)],
+      table_name: mockTables[Math.floor(Math.random() * mockTables.length)],
+      created_at: new Date(Date.now() - i * 3600000).toISOString(),
+      school: { name: `School ${i + 1}` },
+      changed_by: { email: `admin${i}@test.com` },
+    }));
   },
 
   getRecentSchools: async (): Promise<DashboardSchool[]> => {
@@ -246,6 +418,10 @@ export const superAdminService = {
     return schools.map((s: any) => ({
       id: s.id,
       name: s.name,
+      slug: s.slug,
+      school_type: s.school_type || "k12",
+      logo_url: s.logo_url || null,
+      subscription_status: s.subscription_status || "active",
       plan: "Free", // Default
       status:
         s.subscription_status === "active"

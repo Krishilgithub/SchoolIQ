@@ -64,7 +64,7 @@ export const columns: ColumnDef<UserRow>[] = [
 
       if (isSuperAdmin) {
         return (
-          <Badge className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border-red-500/50">
+          <Badge className="bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border-orange-500/50">
             <Shield className="w-3 h-3 mr-1" /> Super Admin
           </Badge>
         );

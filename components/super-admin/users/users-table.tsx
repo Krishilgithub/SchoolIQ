@@ -70,7 +70,7 @@ export function UsersTable({ data }: UsersTableProps) {
   const getUserRoleLabel = (user: SuperAdminUser) => {
     if (user.is_super_admin)
       return (
-        <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0 shadow-none">
+        <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 shadow-none">
           Super Admin
         </Badge>
       );
@@ -171,14 +171,14 @@ export function UsersTable({ data }: UsersTableProps) {
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 border border-slate-100">
+                      <Avatar className="h-9 w-9 border border-orange-100">
                         <AvatarImage
                           src={
                             user.avatar_url ||
                             `https://avatar.vercel.sh/${user.id}`
                           }
                         />
-                        <AvatarFallback className="bg-slate-100 text-slate-600">
+                        <AvatarFallback className="bg-orange-50 text-orange-600">
                           {(user.first_name?.[0] || "") +
                             (user.last_name?.[0] || "")}
                         </AvatarFallback>

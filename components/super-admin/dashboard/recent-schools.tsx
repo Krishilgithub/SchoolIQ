@@ -1,18 +1,10 @@
 import Link from "next/link";
-import { MoreVertical, School, Check, ChevronsRight } from "lucide-react";
+import { MoreVertical, School, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { DashboardSchool } from "@/lib/services/super-admin";
 
-interface SchoolData {
-  id: string;
-  name: string;
-  slug: string;
-  school_type: string;
-  logo_url: string | null;
-  subscription_status: string;
-}
-
-export function RecentSchools({ schools }: { schools: SchoolData[] }) {
+export function RecentSchools({ schools }: { schools: DashboardSchool[] }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-6 shadow-sm h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">

@@ -257,7 +257,7 @@ export function SchoolRegistrationWizard() {
       </div>
 
       {/* Progress Steps */}
-      <div className="mb-10">
+      <div className="mb-16">
         <div className="relative flex justify-between px-4 max-w-3xl mx-auto">
           {/* Connecting Line */}
           <div className="absolute top-1/2 left-0 w-full h-1 bg-neutral-200/50 dark:bg-neutral-800/50 -z-0 -translate-y-1/2 rounded-full" />

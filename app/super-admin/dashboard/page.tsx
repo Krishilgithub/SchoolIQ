@@ -1,4 +1,4 @@
-import { SuperAdminService } from "@/services/super-admin";
+import { superAdminService } from "@/lib/services/super-admin";
 import { Building2, Users, CreditCard } from "lucide-react";
 import { DashboardHeader } from "@/components/super-admin/dashboard/header";
 import { StatsRow } from "@/components/super-admin/dashboard/stats-row";
@@ -8,41 +8,49 @@ import { StorageChart } from "@/components/super-admin/dashboard/storage-chart";
 import { RecentSchools } from "@/components/super-admin/dashboard/recent-schools";
 
 export default async function SuperAdminDashboard() {
-  const service = new SuperAdminService();
-
   // Parallel data fetching for performance
   const [stats, systemHealth, recentAudit, recentSchools] = await Promise.all([
-    service.getDashboardStats(),
-    service.getSystemHealth(),
-    service.getRecentAuditLogs(5),
-    service.getSchools(), // Limit this in service if possible, or slice here
+    superAdminService.getExecutiveStats(),
+    superAdminService.getPlatformHealth(), // Was getSystemHealth, updated to match service
+    superAdminService.getRecentAuditLogs(), // Get audit logs for the audit widget
+    superAdminService.getRecentSchools(),
   ]);
 
   // Transform data for UI components
+  // Stats are already in the format needed by StatsRow (StatMetric[])
+  // We just need to ensure the icons and colors match what we want.
+  // The service returns: Label, Value, Change, Trend, History.
+  // The UI expects: label, value, icon, trend, trendUp, color.
+
+  // Let's map them.
   const kpiStats = [
     {
-      label: "Total Schools",
-      value: stats.totalSchools.toString(),
+      ...stats.find((s) => s.label === "Active Schools")!,
+      value: String(
+        stats.find((s) => s.label === "Active Schools")?.value || "0",
+      ),
       icon: Building2,
-      trend: "+12%",
-      trendUp: true,
+      trendUp: stats.find((s) => s.label === "Active Schools")?.trend === "up",
       color: "violet" as const,
+      trend: `${stats.find((s) => s.label === "Active Schools")?.change}%`,
     },
     {
-      label: "Active Users",
-      value: stats.totalUsers.toString(),
+      ...stats.find((s) => s.label === "Total Users")!,
+      value: String(stats.find((s) => s.label === "Total Users")?.value || "0"),
       icon: Users,
-      trend: "+5%",
-      trendUp: true,
+      trendUp: stats.find((s) => s.label === "Total Users")?.trend === "up",
       color: "pink" as const,
+      trend: `${stats.find((s) => s.label === "Total Users")?.change}%`,
     },
     {
-      label: "Monthly Revenue",
-      value: `$${stats.monthlyRevenue.toLocaleString()}`,
+      ...stats.find((s) => s.label === "Monthly Revenue")!,
+      value: String(
+        stats.find((s) => s.label === "Monthly Revenue")?.value || "$0",
+      ),
       icon: CreditCard,
-      trend: "+18%",
-      trendUp: true,
+      trendUp: stats.find((s) => s.label === "Monthly Revenue")?.trend === "up",
       color: "orange" as const,
+      trend: `${stats.find((s) => s.label === "Monthly Revenue")?.change}%`,
     },
   ];
 
@@ -66,7 +74,7 @@ export default async function SuperAdminDashboard() {
 
         {/* Storage Chart */}
         <div className="lg:col-span-4 h-[400px]">
-          <StorageChart usage={systemHealth.storageUsage} total={1000} />
+          <StorageChart usage={systemHealth.storageUsage || 0} total={1000} />
         </div>
       </div>
 

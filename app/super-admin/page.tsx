@@ -23,7 +23,7 @@ export default async function SuperAdminDashboard() {
       >
         <Button
           asChild
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+          className="bg-orange-600 hover:bg-orange-700 text-white shadow-md shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
         >
           <Link href="/super-admin/schools?action=new">
             <Plus className="mr-2 h-4 w-4" /> Add School
