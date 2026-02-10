@@ -47,7 +47,7 @@ export function BrandPanel() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full filter blur-3xl animate-blob animation-delay-2000" />
 
       {/* Very Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:40px_40px]" />
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-size-[40px_40px]" />
 
       <div className="flex flex-col justify-between p-10 xl:p-12 relative z-10 w-full">
         {/* Logo */}
@@ -129,7 +129,7 @@ export function BrandPanel() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
               >
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
                     <feature.icon className="w-5 h-5 text-brand-500" />
                   </div>

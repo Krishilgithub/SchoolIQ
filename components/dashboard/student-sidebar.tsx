@@ -254,7 +254,14 @@ export function StudentSidebar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
             <DropdownMenuItem
-              onClick={async () => await signOut()}
+              onSelect={async (e) => {
+                e.preventDefault();
+                try {
+                  await signOut();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                }
+              }}
               className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium"
             >
               <LogOut className="mr-2 h-4 w-4" />

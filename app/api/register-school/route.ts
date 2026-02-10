@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CompleteRegistrationData } from "@/lib/validations/school-registration";
+import { sendWelcomeEmail } from "@/lib/services/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,15 +51,16 @@ export async function POST(request: NextRequest) {
         name: data.schoolName,
         slug,
         school_type: data.schoolType,
+        curriculum: data.curriculum || null, // NEW: Board/Curriculum
         website: data.website || null,
         contact_email: data.adminEmail,
         contact_phone: data.phone,
         address: {
-          street: data.addressLine1,
+          street: data.addressLine1 || null,
           street2: data.addressLine2 || null,
           city: data.city,
           state: data.state,
-          zip: data.postalCode,
+          zip: data.postalCode || null,
           country: data.country,
         },
         onboarding_status: "active",
@@ -68,6 +70,10 @@ export async function POST(request: NextRequest) {
           academic_year_start_month: data.academicYearStartMonth || "April",
           primary_language: data.primaryLanguage || "English",
           timezone: data.timezone || "Asia/Kolkata",
+          primary_goals: data.primaryGoals || [], // NEW: Primary goals array
+          expected_start_date: data.expectedStartDate
+            ? new Date(data.expectedStartDate).toISOString()
+            : null, // NEW: Expected start date
         },
       })
       .select()
@@ -119,13 +125,14 @@ export async function POST(request: NextRequest) {
       .update({ school_id: school.id, phone_number: data.adminPhone || null })
       .eq("id", authUser.user.id);
 
-    // 7. Add admin to school_admins junction table
+    // 7. Add admin to school_admins junction table with specific role
     const { error: schoolAdminError } = await supabase
       .from("school_admins")
       .insert({
         school_id: school.id,
         user_id: authUser.user.id,
         role: "primary_admin",
+        specific_role: data.adminRole || null, // NEW: Specific role (Principal, Admin, etc.)
       });
 
     if (schoolAdminError) {
@@ -139,9 +146,54 @@ export async function POST(request: NextRequest) {
         { status: 500 },
       );
     }
+    // Create staff invitations if provided
+    if (data.inviteStaffEmails && data.inviteStaffEmails.length > 0) {
+      const invitations = data.inviteStaffEmails.map((email: string) => ({
+        school_id: school.id,
+        invited_by: authUser.user.id,
+        email: email.toLowerCase(),
+        status: "pending",
+      }));
 
-    // 8. TODO: Send welcome email with login credentials
-    // This would integrate with your email service (e.g., SendGrid, Resend, etc.)
+      const { error: invitationError } = await supabase
+        .from("staff_invitations" as any)
+        .insert(invitations as any);
+
+      if (invitationError) {
+        console.error("Staff invitation creation error:", invitationError);
+        // Non-fatal error - log but continue
+      } else {
+        // TODO: Send invitation emails
+        console.log(
+          `Created ${invitations.length} staff invitations for school ${school.id}`,
+        );
+      }
+    }
+
+    // 8. Send welcome email to school admin
+    try {
+      const emailResult = await sendWelcomeEmail({
+        adminEmail: data.adminEmail,
+        adminName: data.adminFullName,
+        schoolName: data.schoolName,
+        loginUrl: process.env.NEXT_PUBLIC_APP_URL,
+      });
+
+      if (emailResult.success) {
+        console.log(
+          `Welcome email sent successfully to ${data.adminEmail} (Message ID: ${emailResult.messageId})`,
+        );
+      } else {
+        console.error(
+          `Failed to send welcome email to ${data.adminEmail}:`,
+          emailResult.error,
+        );
+        // Non-fatal error - registration still succeeded
+      }
+    } catch (emailError) {
+      console.error("Unexpected error sending welcome email:", emailError);
+      // Non-fatal error - registration still succeeded
+    }
 
     // 9. Return success response
     return NextResponse.json(

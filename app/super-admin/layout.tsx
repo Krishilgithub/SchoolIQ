@@ -1,5 +1,5 @@
-import { SuperAdminSidebar } from "@/components/dashboard/super-admin-sidebar";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { AdminSidebar } from "@/components/super-admin/admin-sidebar";
+import { SuperAdminHeader } from "@/components/super-admin/header";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -34,17 +34,15 @@ export default async function SuperAdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-neutral-50 overflow-hidden">
-      {/* Fixed Sidebar */}
-      <aside className="hidden w-[280px] flex-col border-r bg-white fixed inset-y-0 left-0 z-50 lg:flex">
-        <SuperAdminSidebar />
-      </aside>
+    <div className="flex min-h-screen bg-muted/40">
+      {/* Sidebar */}
+      <AdminSidebar />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col lg:pl-[280px] h-screen overflow-hidden">
-        <DashboardHeader />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">
-          <div className="mx-auto max-w-7xl w-full">{children}</div>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <SuperAdminHeader />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-7xl space-y-4">{children}</div>
         </main>
       </div>
     </div>

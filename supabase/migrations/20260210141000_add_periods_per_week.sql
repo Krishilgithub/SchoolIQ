@@ -1,0 +1,2 @@
+ALTER TABLE class_subjects 
+ADD COLUMN IF NOT EXISTS periods_per_week INTEGER DEFAULT 0;

@@ -14,12 +14,21 @@ import {
   ChevronLeft,
   Menu,
   LogOut,
+  Activity,
+  Workflow,
+  Database,
+  Flag,
+  Puzzle,
+  LifeBuoy,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Logo } from "@/components/marketing/logo";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -27,48 +36,98 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const sidebarItems = [
+// All available routes
+const allRoutes = [
   {
     title: "Dashboard",
     href: "/super-admin/dashboard",
     icon: LayoutDashboard,
+    group: "Overview",
   },
   {
     title: "Schools",
     href: "/super-admin/schools",
     icon: Building2,
+    group: "Management",
+    badge: "Active", // Example dynamic badge location
   },
   {
-    title: "Users",
+    title: "Users & Roles",
     href: "/super-admin/users",
     icon: Users,
-  },
-  {
-    title: "Audit Logs",
-    href: "/super-admin/audit",
-    icon: FileText,
+    group: "Management",
   },
   {
     title: "Billing",
     href: "/super-admin/billing",
     icon: CreditCard,
+    group: "Management",
   },
   {
-    title: "Security Center",
+    title: "System Health",
+    href: "/super-admin/health",
+    icon: Activity,
+    group: "Observability",
+  },
+  {
+    title: "Jobs & Workers",
+    href: "/super-admin/jobs",
+    icon: Workflow, // Using Workflow for Jobs
+    group: "Observability",
+  },
+  {
+    title: "Audit Logs",
+    href: "/super-admin/audit",
+    icon: FileText,
+    group: "Observability",
+  },
+  {
+    title: "Backups",
+    href: "/super-admin/backups",
+    icon: Database,
+    group: "Observability",
+  },
+  {
+    title: "Feature Flags",
+    href: "/super-admin/feature-flags",
+    icon: Flag,
+    group: "Configuration",
+  },
+  {
+    title: "Integrations",
+    href: "/super-admin/integrations",
+    icon: Puzzle,
+    group: "Configuration",
+  },
+  {
+    title: "Security",
     href: "/super-admin/security",
     icon: ShieldCheck,
+    group: "Configuration",
   },
   {
-    title: "System Settings",
+    title: "Support",
+    href: "/super-admin/support",
+    icon: LifeBuoy,
+    group: "Support",
+  },
+  {
+    title: "Settings",
     href: "/super-admin/settings",
     icon: Settings,
+    group: "Support",
   },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const { signOut } = useAuth(); // Removed unused 'user'
+  const { signOut } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredRoutes = allRoutes.filter((route) =>
+    route.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <aside
@@ -114,10 +173,25 @@ export function AdminSidebar() {
         </Button>
       </div>
 
+      {/* Search Bar - Only show when expanded */}
+      {!collapsed && (
+        <div className="px-4 py-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              className="pl-9 h-9 bg-background/50 border-input/50 focus:bg-background transition-colors"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+      <div className="flex-1 overflow-y-auto py-2 px-3 space-y-1 scrollbar-thin scrollbar-thumb-border">
         <TooltipProvider delayDuration={0}>
-          {sidebarItems.map((item) => {
+          {filteredRoutes.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Tooltip key={item.href}>
@@ -125,17 +199,17 @@ export function AdminSidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group relative overflow-hidden",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group relative overflow-hidden",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                      collapsed && "justify-center px-2",
+                      collapsed && "justify-center px-2 py-3",
                     )}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="active-nav-sidebar"
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"
+                        className="absolute left-0 top-1 bottom-1 w-1 bg-primary rounded-full"
                         transition={{ duration: 0.2 }}
                       />
                     )}
@@ -147,18 +221,58 @@ export function AdminSidebar() {
                           : "text-muted-foreground group-hover:text-foreground",
                       )}
                     />
-                    {!collapsed && <span>{item.title}</span>}
+                    {!collapsed && (
+                      <div className="flex flex-1 items-center justify-between">
+                        <span>{item.title}</span>
+                        {item.badge && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 px-1.5 bg-primary/5 border-primary/20 text-primary"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                     {collapsed && <span className="sr-only">{item.title}</span>}
                   </Link>
                 </TooltipTrigger>
                 {collapsed && (
-                  <TooltipContent side="right">{item.title}</TooltipContent>
+                  <TooltipContent side="right">
+                    <div className="flex items-center gap-2">
+                      {item.title}
+                      {item.badge && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] h-5 px-1"
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                  </TooltipContent>
                 )}
               </Tooltip>
             );
           })}
         </TooltipProvider>
+
+        {filteredRoutes.length === 0 && (
+          <div className="text-center py-8 text-sm text-muted-foreground">
+            No modules found
+          </div>
+        )}
       </div>
+
+      {/* Environment Tag */}
+      {!collapsed && (
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-center p-2 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 text-xs font-bold uppercase tracking-widest gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+            Generic Mode
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="p-4 border-t border-border">

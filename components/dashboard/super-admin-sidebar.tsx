@@ -263,7 +263,14 @@ export function SuperAdminSidebar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-gray-200" />
             <DropdownMenuItem
-              onClick={() => signOut()}
+              onSelect={async (e) => {
+                e.preventDefault();
+                try {
+                  await signOut();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                }
+              }}
               className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />

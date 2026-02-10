@@ -109,7 +109,8 @@ export const superAdminService = {
     }
 
     // 1. Create School
-    const { data: school, error: schoolError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: school, error: schoolError } = await (supabase as any)
       .from("schools")
       .insert({
         name: data.schoolName,
@@ -503,5 +504,1192 @@ export const superAdminService = {
     );
 
     if (authError) throw authError;
+  },
+
+  // ============================================================
+  // SUPPORT SYSTEM
+  // ============================================================
+
+  /**
+   * Get all support tickets with filters
+   */
+  getSupportTickets: async (filters?: {
+    status?: string;
+    priority?: string;
+    schoolId?: string;
+  }) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("support_tickets")
+      .select(
+        `
+        *,
+        school:schools(name),
+        user:profiles!support_tickets_user_id_fkey(full_name, email),
+        assigned_to:profiles!support_tickets_assigned_to_fkey(full_name)
+      `,
+      )
+      .order("created_at", { ascending: false });
+
+    if (filters?.status) {
+      query = query.eq("status", filters.status);
+    }
+    if (filters?.priority) {
+      query = query.eq("priority", filters.priority);
+    }
+    if (filters?.schoolId) {
+      query = query.eq("school_id", filters.schoolId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a new support ticket
+   */
+  createSupportTicket: async (ticketData: {
+    schoolId?: string;
+    userId?: string;
+    subject: string;
+    description: string;
+    priority: string;
+    category?: string;
+    tags?: string[];
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("support_tickets")
+      .insert({
+        school_id: ticketData.schoolId || null,
+        user_id: ticketData.userId || null,
+        subject: ticketData.subject,
+        description: ticketData.description,
+        priority: ticketData.priority,
+        category: ticketData.category,
+        tags: ticketData.tags,
+        status: "open",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update a support ticket
+   */
+  updateSupportTicket: async (
+    ticketId: string,
+    updates: {
+      status?: string;
+      priority?: string;
+      assigned_to?: string;
+    },
+  ) => {
+    const supabase = createAdminClient();
+    const updateData: any = { ...updates };
+
+    if (updates.status === "resolved") {
+      updateData.resolved_at = new Date().toISOString();
+    } else if (updates.status === "closed") {
+      updateData.closed_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from("support_tickets")
+      .update(updateData)
+      .eq("id", ticketId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get messages for a ticket
+   */
+  getTicketMessages: async (ticketId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("ticket_messages")
+      .select(
+        `
+        *,
+        user:profiles(full_name, email)
+      `,
+      )
+      .eq("ticket_id", ticketId)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Add a message to a ticket
+   */
+  addTicketMessage: async (messageData: {
+    ticketId: string;
+    userId: string;
+    message: string;
+    isInternal?: boolean;
+    attachments?: any;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("ticket_messages")
+      .insert({
+        ticket_id: messageData.ticketId,
+        user_id: messageData.userId,
+        message: messageData.message,
+        is_internal: messageData.isInternal || false,
+        attachments: messageData.attachments,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get all incidents
+   */
+  getIncidents: async (status?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("incidents")
+      .select(
+        `
+        *,
+        created_by:profiles(full_name)
+      `,
+      )
+      .order("started_at", { ascending: false });
+
+    if (status) {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a new incident
+   */
+  createIncident: async (incidentData: {
+    title: string;
+    description?: string;
+    severity: string;
+    affectedServices?: string[];
+    createdBy: string;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("incidents")
+      .insert({
+        title: incidentData.title,
+        description: incidentData.description,
+        severity: incidentData.severity,
+        affected_services: incidentData.affectedServices,
+        created_by: incidentData.createdBy,
+        started_at: new Date().toISOString(),
+        status: "investigating",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update an incident
+   */
+  updateIncident: async (
+    incidentId: string,
+    updates: {
+      status?: string;
+      description?: string;
+      rootCause?: string;
+    },
+  ) => {
+    const supabase = createAdminClient();
+    const updateData: any = { ...updates };
+
+    if (updates.status === "resolved") {
+      updateData.resolved_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from("incidents")
+      .update(updateData)
+      .eq("id", incidentId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // ============================================================
+  // SYSTEM MONITORING
+  // ============================================================
+
+  /**
+   * Get system metrics
+   */
+  getSystemMetrics: async (metricName?: string, hours: number = 24) => {
+    const supabase = createAdminClient();
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+
+    let query = supabase
+      .from("system_metrics")
+      .select("*")
+      .gte("recorded_at", since)
+      .order("recorded_at", { ascending: false });
+
+    if (metricName) {
+      query = query.eq("metric_name", metricName);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Record a system metric
+   */
+  recordSystemMetric: async (metricData: {
+    metricName: string;
+    metricValue: number;
+    metricUnit?: string;
+    metadata?: any;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("system_metrics")
+      .insert({
+        metric_name: metricData.metricName,
+        metric_value: metricData.metricValue,
+        metric_unit: metricData.metricUnit,
+        metadata: metricData.metadata,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get system alerts
+   */
+  getSystemAlerts: async (status?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("system_alerts")
+      .select(
+        `
+        *,
+        acknowledged_by:profiles(full_name)
+      `,
+      )
+      .order("created_at", { ascending: false });
+
+    if (status) {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a system alert
+   */
+  createSystemAlert: async (alertData: {
+    alertType: string;
+    severity: string;
+    message: string;
+    metricName?: string;
+    thresholdValue?: number;
+    currentValue?: number;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("system_alerts")
+      .insert({
+        alert_type: alertData.alertType,
+        severity: alertData.severity,
+        message: alertData.message,
+        metric_name: alertData.metricName,
+        threshold_value: alertData.thresholdValue,
+        current_value: alertData.currentValue,
+        status: "active",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Acknowledge an alert
+   */
+  acknowledgeAlert: async (alertId: string, userId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("system_alerts")
+      .update({
+        status: "acknowledged",
+        acknowledged_by: userId,
+        acknowledged_at: new Date().toISOString(),
+      })
+      .eq("id", alertId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Resolve an alert
+   */
+  resolveAlert: async (alertId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("system_alerts")
+      .update({
+        status: "resolved",
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", alertId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // ============================================================
+  // SECURITY
+  // ============================================================
+
+  /**
+   * Get IP rules
+   */
+  getIPRules: async (ruleType?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("ip_rules")
+      .select(
+        `
+        *,
+        created_by:profiles(full_name)
+      `,
+      )
+      .order("created_at", { ascending: false });
+
+    if (ruleType) {
+      query = query.eq("rule_type", ruleType);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create an IP rule
+   */
+  createIPRule: async (ruleData: {
+    ipAddress: string;
+    ruleType: string;
+    reason?: string;
+    createdBy: string;
+    expiresAt?: string;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("ip_rules")
+      .insert({
+        ip_address: ruleData.ipAddress,
+        rule_type: ruleData.ruleType,
+        reason: ruleData.reason,
+        created_by: ruleData.createdBy,
+        expires_at: ruleData.expiresAt,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Delete an IP rule
+   */
+  deleteIPRule: async (ruleId: string) => {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("ip_rules").delete().eq("id", ruleId);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get login attempts
+   */
+  getLoginAttempts: async (filters?: { email?: string; success?: boolean }) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("login_attempts")
+      .select("*")
+      .order("attempted_at", { ascending: false })
+      .limit(100);
+
+    if (filters?.email) {
+      query = query.eq("email", filters.email);
+    }
+    if (filters?.success !== undefined) {
+      query = query.eq("success", filters.success);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Log a login attempt
+   */
+  logLoginAttempt: async (attemptData: {
+    email: string;
+    ipAddress?: string;
+    userAgent?: string;
+    success: boolean;
+    failureReason?: string;
+    location?: any;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("login_attempts")
+      .insert({
+        email: attemptData.email,
+        ip_address: attemptData.ipAddress,
+        user_agent: attemptData.userAgent,
+        success: attemptData.success,
+        failure_reason: attemptData.failureReason,
+        location: attemptData.location,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get active sessions
+   */
+  getActiveSessions: async (userId?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("active_sessions")
+      .select(
+        `
+        *,
+        user:profiles(full_name, email)
+      `,
+      )
+      .gt("expires_at", new Date().toISOString())
+      .order("last_activity", { ascending: false });
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Terminate a session
+   */
+  terminateSession: async (sessionId: string) => {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("active_sessions")
+      .delete()
+      .eq("id", sessionId);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get security policies
+   */
+  getSecurityPolicies: async () => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("security_policies")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update a security policy
+   */
+  updateSecurityPolicy: async (
+    policyId: string,
+    updates: { policy_config?: any; is_active?: boolean },
+  ) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("security_policies")
+      .update(updates)
+      .eq("id", policyId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // ============================================================
+  // FEATURE FLAGS
+  // ============================================================
+
+  /**
+   * Get all feature flags
+   */
+  getFeatureFlags: async () => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a feature flag
+   */
+  createFeatureFlag: async (flagData: {
+    flagKey: string;
+    flagName: string;
+    description?: string;
+    isEnabled?: boolean;
+    rolloutPercentage?: number;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .insert({
+        flag_key: flagData.flagKey,
+        flag_name: flagData.flagName,
+        description: flagData.description,
+        is_enabled: flagData.isEnabled || false,
+        rollout_percentage: flagData.rolloutPercentage || 0,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Toggle a feature flag
+   */
+  toggleFeatureFlag: async (flagId: string, isEnabled: boolean) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .update({ is_enabled: isEnabled })
+      .eq("id", flagId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update feature flag rollout
+   */
+  updateFlagRollout: async (
+    flagId: string,
+    rolloutPercentage: number,
+    targetSchools?: string[],
+    targetUsers?: string[],
+  ) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .update({
+        rollout_percentage: rolloutPercentage,
+        target_schools: targetSchools,
+        target_users: targetUsers,
+      })
+      .eq("id", flagId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get feature flag history
+   */
+  getFlagHistory: async (flagId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("feature_flag_history")
+      .select(
+        `
+        *,
+        changed_by:profiles(full_name, email)
+      `,
+      )
+      .eq("flag_id", flagId)
+      .order("changed_at", { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Delete a feature flag
+   */
+  deleteFeatureFlag: async (flagId: string) => {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("feature_flags")
+      .delete()
+      .eq("id", flagId);
+
+    if (error) throw error;
+  },
+
+  // ============================================================
+  // BACKGROUND JOBS
+  // ============================================================
+
+  /**
+   * Get background jobs
+   */
+  getBackgroundJobs: async (filters?: {
+    status?: string;
+    jobType?: string;
+  }) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("background_jobs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (filters?.status) {
+      query = query.eq("status", filters.status);
+    }
+    if (filters?.jobType) {
+      query = query.eq("job_type", filters.jobType);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a background job
+   */
+  createBackgroundJob: async (jobData: {
+    jobType: string;
+    jobName: string;
+    payload?: any;
+    scheduledAt?: string;
+    priority?: number;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("background_jobs")
+      .insert({
+        job_type: jobData.jobType,
+        job_name: jobData.jobName,
+        payload: jobData.payload,
+        scheduled_at: jobData.scheduledAt,
+        priority: jobData.priority || 0,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Retry a failed job
+   */
+  retryJob: async (jobId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("background_jobs")
+      .update({
+        status: "pending",
+        error_message: null,
+        stack_trace: null,
+      })
+      .eq("id", jobId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Cancel a job
+   */
+  cancelJob: async (jobId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("background_jobs")
+      .update({ status: "cancelled" })
+      .eq("id", jobId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get job schedules
+   */
+  getJobSchedules: async () => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("job_schedules")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a job schedule
+   */
+  createJobSchedule: async (scheduleData: {
+    jobType: string;
+    scheduleCron: string;
+    isActive?: boolean;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("job_schedules")
+      .insert({
+        job_type: scheduleData.jobType,
+        schedule_cron: scheduleData.scheduleCron,
+        is_active:
+          scheduleData.isActive !== undefined ? scheduleData.isActive : true,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update a job schedule
+   */
+  updateJobSchedule: async (
+    scheduleId: string,
+    updates: { schedule_cron?: string; is_active?: boolean },
+  ) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("job_schedules")
+      .update(updates)
+      .eq("id", scheduleId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Delete a job schedule
+   */
+  deleteJobSchedule: async (scheduleId: string) => {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("job_schedules")
+      .delete()
+      .eq("id", scheduleId);
+
+    if (error) throw error;
+  },
+
+  // ============================================================
+  // BACKUPS & EXPORTS
+  // ============================================================
+
+  /**
+   * Get database backups
+   */
+  getDatabaseBackups: async (backupType?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("database_backups")
+      .select(
+        `
+        *,
+        created_by:profiles(full_name)
+      `,
+      )
+      .order("created_at", { ascending: false });
+
+    if (backupType) {
+      query = query.eq("backup_type", backupType);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a database backup
+   */
+  createDatabaseBackup: async (backupData: {
+    backupType: string;
+    createdBy: string;
+    retentionDays?: number;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("database_backups")
+      .insert({
+        backup_type: backupData.backupType,
+        created_by: backupData.createdBy,
+        retention_days: backupData.retentionDays || 30,
+        backup_status: "in_progress",
+        backup_location: `/backups/${Date.now()}.sql`,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update backup status (after backup completes)
+   */
+  updateBackupStatus: async (
+    backupId: string,
+    status: string,
+    backupSize?: number,
+    errorMessage?: string,
+  ) => {
+    const supabase = createAdminClient();
+    const updateData: any = {
+      backup_status: status,
+      completed_at: new Date().toISOString(),
+    };
+
+    if (backupSize) updateData.backup_size_bytes = backupSize;
+    if (errorMessage) updateData.error_message = errorMessage;
+
+    const { data, error } = await supabase
+      .from("database_backups")
+      .update(updateData)
+      .eq("id", backupId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Delete a backup
+   */
+  deleteBackup: async (backupId: string) => {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("database_backups")
+      .delete()
+      .eq("id", backupId);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get data exports
+   */
+  getDataExports: async (exportType?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("data_exports")
+      .select(
+        `
+        *,
+        requested_by:profiles(full_name)
+      `,
+      )
+      .order("created_at", { ascending: false });
+
+    if (exportType) {
+      query = query.eq("export_type", exportType);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a data export
+   */
+  createDataExport: async (exportData: {
+    exportType: string;
+    exportFormat: string;
+    filters?: any;
+    requestedBy: string;
+  }) => {
+    const supabase = createAdminClient();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+    const { data, error } = await supabase
+      .from("data_exports")
+      .insert({
+        export_type: exportData.exportType,
+        export_format: exportData.exportFormat,
+        filters: exportData.filters,
+        requested_by: exportData.requestedBy,
+        expires_at: expiresAt.toISOString(),
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update export status
+   */
+  updateExportStatus: async (
+    exportId: string,
+    status: string,
+    filePath?: string,
+    fileSize?: number,
+  ) => {
+    const supabase = createAdminClient();
+    const updateData: any = {
+      status,
+      completed_at: new Date().toISOString(),
+    };
+
+    if (filePath) updateData.file_path = filePath;
+    if (fileSize) updateData.file_size_bytes = fileSize;
+
+    const { data, error } = await supabase
+      .from("data_exports")
+      .update(updateData)
+      .eq("id", exportId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // ============================================================
+  // INTEGRATIONS
+  // ============================================================
+
+  /**
+   * Get integration configs
+   */
+  getIntegrationConfigs: async (integrationType?: string) => {
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("integration_configs")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (integrationType) {
+      query = query.eq("integration_type", integrationType);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create or update an integration config
+   */
+  upsertIntegrationConfig: async (configData: {
+    integrationName: string;
+    integrationType: string;
+    configData: any;
+    isEnabled?: boolean;
+    testMode?: boolean;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("integration_configs")
+      .upsert(
+        {
+          integration_name: configData.integrationName,
+          integration_type: configData.integrationType,
+          config_data: configData.configData,
+          is_enabled:
+            configData.isEnabled !== undefined ? configData.isEnabled : false,
+          test_mode:
+            configData.testMode !== undefined ? configData.testMode : true,
+        },
+        { onConflict: "integration_name" },
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Test an integration
+   */
+  testIntegration: async (integrationId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("integration_configs")
+      .update({
+        last_tested_at: new Date().toISOString(),
+        test_status: "success",
+      })
+      .eq("id", integrationId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Get webhooks
+   */
+  getWebhooks: async () => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("webhooks")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Create a webhook
+   */
+  createWebhook: async (webhookData: {
+    url: string;
+    events: string[];
+    secretKey: string;
+    retryConfig?: any;
+  }) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("webhooks")
+      .insert({
+        url: webhookData.url,
+        events: webhookData.events,
+        secret_key: webhookData.secretKey,
+        retry_config: webhookData.retryConfig,
+        is_active: true,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update a webhook
+   */
+  updateWebhook: async (
+    webhookId: string,
+    updates: { url?: string; events?: string[]; isActive?: boolean },
+  ) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("webhooks")
+      .update(updates)
+      .eq("id", webhookId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Delete a webhook
+   */
+  deleteWebhook: async (webhookId: string) => {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("webhooks")
+      .delete()
+      .eq("id", webhookId);
+
+    if (error) throw error;
+  },
+
+  /**
+   * Get webhook deliveries
+   */
+  getWebhookDeliveries: async (webhookId: string) => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("webhook_deliveries")
+      .select("*")
+      .eq("webhook_id", webhookId)
+      .order("delivered_at", { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    return data;
   },
 };

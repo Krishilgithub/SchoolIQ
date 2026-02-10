@@ -55,12 +55,12 @@ export default function UnauthorizedPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 text-foreground relative overflow-hidden">
       {/* Background Decoration */}
-      <div className="absolute inset-0 bg-grid-slate/[0.02] bg-[size:40px_40px]" />
+      <div className="absolute inset-0 bg-grid-slate/[0.02] bg-size-[40px_40px]" />
       <div className="absolute top-0 right-0 w-96 h-96 bg-red-200/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl" />
 
       <motion.div
-        className="container flex max-w-[56rem] flex-col items-center gap-6 text-center relative z-10"
+        className="container flex max-w-4xl flex-col items-center gap-6 text-center relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -99,7 +99,7 @@ export default function UnauthorizedPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="max-w-[42rem] leading-relaxed text-muted-foreground text-lg">
+          <p className="max-w-2xl leading-relaxed text-muted-foreground text-lg">
             You don&apos;t have permission to access this page. This area is
             restricted to users with specific roles.
           </p>

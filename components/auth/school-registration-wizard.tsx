@@ -10,21 +10,13 @@ import {
   ArrowLeft,
   CheckCircle2,
   Building2,
-  MapPin,
-  UserCircle,
-  Settings as SettingsIcon,
-  FileCheck,
-  Sparkles,
-  CheckCircle,
-  Globe,
   Mail,
   Phone,
   User,
-  Lock,
-  GraduationCap,
-  Users,
-  Hash,
-  Calendar,
+  Globe,
+  MapPin,
+  Target,
+  FileCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -40,45 +32,60 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  schoolInfoSchema,
-  locationSchema,
-  adminAccountSchema,
-  preferencesSchema,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+import {
+  accountCreationSchema,
+  schoolDetailsSchema,
+  usageIntentSchema,
   reviewSchema,
-  SchoolInfoInput,
-  LocationInput,
-  AdminAccountInput,
-  PreferencesInput,
+  AccountCreationInput,
+  SchoolDetailsInput,
+  UsageIntentInput,
   ReviewInput,
   CompleteRegistrationData,
 } from "@/lib/validations/school-registration";
 import { PasswordInput } from "@/components/auth/password-input";
+import { PasswordRequirements } from "@/components/auth/password-requirements";
+import { RoleSelector } from "@/components/auth/role-selector";
+import { PrimaryGoalsSelector } from "@/components/auth/primary-goals-selector";
+import { InviteStaffInput } from "@/components/auth/invite-staff-input";
 
 const steps = [
   {
-    label: "School Info",
-    description: "Basic details",
+    id: 1,
+    label: "Account",
+    subtitle: "WHO",
+    description: "Create your admin account",
+    icon: User,
+  },
+  {
+    id: 2,
+    label: "School Details",
+    subtitle: "WHAT",
+    description: "Tell us about your school",
     icon: Building2,
   },
   {
-    label: "Location",
-    description: "Address & contact",
-    icon: MapPin,
+    id: 3,
+    label: "Usage & Intent",
+    subtitle: "HOW",
+    description: "How you'll use SchoolIQ",
+    icon: Target,
   },
   {
-    label: "Admin Account",
-    description: "Your credentials",
-    icon: UserCircle,
-  },
-  {
-    label: "Preferences",
-    description: "Optional settings",
-    icon: SettingsIcon,
-  },
-  {
-    label: "Review",
-    description: "Confirm & submit",
+    id: 4,
+    label: "Review & Create",
+    subtitle: "DONE",
+    description: "Confirm and create account",
     icon: FileCheck,
   },
 ];
@@ -90,52 +97,50 @@ export function SchoolRegistrationWizard() {
   const router = useRouter();
 
   // Form states for each step
-  const step1Form = useForm<SchoolInfoInput>({
-    resolver: zodResolver(schoolInfoSchema),
-    defaultValues: {
-      schoolName: "",
-      website: "",
-      schoolType: undefined,
-      studentCountRange: undefined,
-    } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  });
-
-  const step2Form = useForm<LocationInput>({
-    resolver: zodResolver(locationSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    defaultValues: {
-      addressLine1: "",
-      addressLine2: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "India",
-      phone: "",
-    },
-  });
-
-  const step3Form = useForm<AdminAccountInput>({
-    resolver: zodResolver(adminAccountSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  const step1Form = useForm<AccountCreationInput>({
+    resolver: zodResolver(accountCreationSchema) as any,
     defaultValues: {
       adminFullName: "",
       adminEmail: "",
-      adminPhone: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  const step4Form = useForm<PreferencesInput>({
-    resolver: zodResolver(preferencesSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  const step2Form = useForm<SchoolDetailsInput>({
+    resolver: zodResolver(schoolDetailsSchema) as any,
     defaultValues: {
-      academicYearStartMonth: undefined,
+      schoolName: "",
+      curriculum: undefined as any,
+      schoolType: undefined as any,
+      country: "India",
+      state: "",
+      city: "",
+      studentCountRange: undefined as any,
+      phone: "",
+      website: "",
+    },
+  });
+
+  const step3Form = useForm<UsageIntentInput>({
+    resolver: zodResolver(usageIntentSchema) as any,
+    defaultValues: {
+      adminRole: undefined as any,
+      primaryGoals: [],
+      expectedStartDate: undefined as any,
+      inviteStaffEmails: [],
+      academicYearStartMonth: "April",
       primaryLanguage: "English",
       timezone: "Asia/Kolkata",
     },
   });
 
-  const step5Form = useForm<ReviewInput>({
-    resolver: zodResolver(reviewSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    defaultValues: { acceptTerms: false },
+  const step4Form = useForm<ReviewInput>({
+    resolver: zodResolver(reviewSchema) as any,
+    defaultValues: {
+      acceptTerms: false,
+      acceptPrivacy: false,
+    },
   });
 
   // Navigation
@@ -150,31 +155,17 @@ export function SchoolRegistrationWizard() {
   };
 
   // Step handlers
-  const onStep1Submit = async () => {
-    nextStep();
-  };
-
-  const onStep2Submit = async () => {
-    nextStep();
-  };
-
-  const onStep3Submit = async () => {
-    nextStep();
-  };
-
-  const onStep4Submit = async () => {
-    nextStep();
-  };
+  const onStep1Submit = async () => nextStep();
+  const onStep2Submit = async () => nextStep();
+  const onStep3Submit = async () => nextStep();
 
   const onFinalSubmit = async (data: ReviewInput) => {
     setIsLoading(true);
     try {
-      // Combine all form data
       const completeData: CompleteRegistrationData = {
         ...step1Form.getValues(),
         ...step2Form.getValues(),
         ...step3Form.getValues(),
-        ...step4Form.getValues(),
         ...data,
       };
 
@@ -207,32 +198,25 @@ export function SchoolRegistrationWizard() {
       x: direction > 0 ? 20 : -20,
       opacity: 0,
     }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
+    center: { x: 0, opacity: 1 },
     exit: (direction: number) => ({
-      zIndex: 0,
       x: direction < 0 ? 20 : -20,
       opacity: 0,
     }),
   };
 
-  // Progress percentage
-  const progress = (currentStep / steps.length) * 100;
+  const password = step1Form.watch("password");
 
   return (
     <div className="w-full py-8">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-8 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center justify-center relative mb-6"
+          className="inline-flex mb-6"
         >
-          <div className="relative p-4 rounded-2xl bg-gradient-to-br from-brand-500 to-orange-500 text-white shadow-md">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md">
             <Building2 className="w-8 h-8" />
           </div>
         </motion.div>
@@ -240,8 +224,7 @@ export function SchoolRegistrationWizard() {
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-4xl md:text-5xl font-bold font-heading bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 dark:from-white dark:via-neutral-100 dark:to-white bg-clip-text text-transparent mb-3 tracking-tight"
+          className="text-4xl md:text-5xl font-bold mb-2"
         >
           {steps[currentStep - 1].label}
         </motion.h1>
@@ -249,27 +232,29 @@ export function SchoolRegistrationWizard() {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-neutral-600 dark:text-neutral-400 text-base md:text-lg max-w-2xl mx-auto"
+          className="text-neutral-600 dark:text-neutral-400"
         >
           {steps[currentStep - 1].description}
         </motion.p>
       </div>
 
-      {/* Progress Steps */}
-      <div className="mb-16">
-        <div className="relative flex justify-between px-4 max-w-3xl mx-auto">
-          {/* Connecting Line */}
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-neutral-200/50 dark:bg-neutral-800/50 -z-0 -translate-y-1/2 rounded-full" />
+      {/* Progress Bar */}
+      <div className="mb-16 max-w-3xl mx-auto px-4">
+        <div className="relative flex justify-between">
+          {/* Background Line */}
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-neutral-200 dark:bg-neutral-800 -translate-y-1/2 rounded-full" />
+
+          {/* Progress Line */}
           <motion.div
-            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-brand-500 via-brand-600 to-orange-500 -z-0 -translate-y-1/2 rounded-full origin-left"
+            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-orange-500 to-orange-600 -translate-y-1/2 rounded-full"
             initial={{ width: "0%" }}
             animate={{
               width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
             }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            transition={{ duration: 0.5 }}
           />
 
+          {/* Step Indicators */}
           {steps.map((step, index) => {
             const stepNum = index + 1;
             const isActive = stepNum === currentStep;
@@ -278,940 +263,748 @@ export function SchoolRegistrationWizard() {
             return (
               <div key={stepNum} className="relative z-10">
                 <motion.div
-                  initial={false}
-                  animate={{
-                    scale: isActive ? 1.1 : 1,
-                  }}
+                  animate={{ scale: isActive ? 1.1 : 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="relative"
                 >
                   <div
-                    className={`relative w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                    className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all",
                       isActive || isCompleted
-                        ? "bg-gradient-to-br from-brand-500 to-orange-500 text-white shadow-md"
-                        : "bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500"
-                    }`}
+                        ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md"
+                        : "bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 text-neutral-400",
+                    )}
                   >
                     {isCompleted ? (
                       <CheckCircle2 className="w-6 h-6" />
                     ) : (
-                      <span>{stepNum}</span>
+                      stepNum
                     )}
                   </div>
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 whitespace-nowrap"
-                >
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 whitespace-nowrap text-center">
                   <span
-                    className={`text-xs font-medium ${
-                      isActive
-                        ? "text-brand-600 dark:text-brand-400"
-                        : "text-neutral-500 dark:text-neutral-500"
-                    }`}
+                    className={cn(
+                      "text-xs font-medium block",
+                      isActive ? "text-orange-600" : "text-neutral-500",
+                    )}
                   >
                     {step.label}
                   </span>
-                </motion.div>
+                  <span className="text-[10px] text-neutral-400">
+                    {step.subtitle}
+                  </span>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Form Area */}
-      <div className="w-full max-w-4xl mx-auto">
-        {/* Modern Card */}
-        <div className="relative">
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm p-8 md:p-12">
-            <div className="relative min-h-[480px]">
-              <AnimatePresence initial={false} custom={direction} mode="wait">
-                {/* Step 1: School Info */}
-                {currentStep === 1 && (
-                  <motion.div
-                    key="step1"
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 },
-                    }}
-                    className="absolute inset-0"
+      {/* Form Card */}
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm p-8 md:p-12">
+          <div className="min-h-125 relative overflow-hidden">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              {/* STEP 1: Account Creation (WHO) */}
+              {currentStep === 1 && (
+                <motion.div
+                  key="step1"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 overflow-y-auto"
+                >
+                  <form
+                    onSubmit={step1Form.handleSubmit(onStep1Submit)}
+                    className="space-y-6"
                   >
-                    <form
-                      onSubmit={step1Form.handleSubmit(onStep1Submit)}
-                      className="space-y-6"
-                    >
-                      <div className="space-y-5">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="schoolName"
-                            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                          >
-                            School Name <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="relative">
-                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                              id="schoolName"
-                              className="pl-9"
-                              placeholder="e.g., Springfield High School"
-                              {...step1Form.register("schoolName")}
-                            />
-                          </div>
-                          {step1Form.formState.errors.schoolName && (
-                            <p className="text-xs text-red-500 mt-1">
-                              {step1Form.formState.errors.schoolName.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="schoolType"
-                              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                            >
-                              School Type{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <div className="relative">
-                              <GraduationCap className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none z-10" />
-                              <Select
-                                onValueChange={(val) =>
-                                  step1Form.setValue("schoolType", val as any)
-                                }
-                                defaultValue={step1Form.getValues("schoolType")}
-                              >
-                                <SelectTrigger className="h-12 pl-10">
-                                  <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="k12">
-                                    K-12 School
-                                  </SelectItem>
-                                  <SelectItem value="higher_ed">
-                                    Higher Education
-                                  </SelectItem>
-                                  <SelectItem value="vocational">
-                                    Vocational/Technical
-                                  </SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            {step1Form.formState.errors.schoolType && (
-                              <p className="text-xs text-red-500 mt-1">
-                                {step1Form.formState.errors.schoolType.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="studentCountRange"
-                              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                            >
-                              Student Count{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <div className="relative">
-                              <Users className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none z-10" />
-                              <Select
-                                onValueChange={(val) =>
-                                  step1Form.setValue(
-                                    "studentCountRange",
-                                    val as
-                                      | "1-100"
-                                      | "101-500"
-                                      | "501-1000"
-                                      | "1000+",
-                                  )
-                                }
-                                defaultValue={step1Form.getValues(
-                                  "studentCountRange",
-                                )}
-                              >
-                                <SelectTrigger className="h-12 pl-10">
-                                  <SelectValue placeholder="Approx. students" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="1-100">1-100</SelectItem>
-                                  <SelectItem value="101-500">
-                                    101-500
-                                  </SelectItem>
-                                  <SelectItem value="501-1000">
-                                    501-1000
-                                  </SelectItem>
-                                  <SelectItem value="1000+">1000+</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            {step1Form.formState.errors.studentCountRange && (
-                              <p className="text-xs text-red-500 mt-1">
-                                {
-                                  step1Form.formState.errors.studentCountRange
-                                    .message
-                                }
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="website"
-                            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                          >
-                            Website{" "}
-                            <span className="text-neutral-400 text-xs font-normal">
-                              (Optional)
-                            </span>
-                          </Label>
-                          <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                              id="website"
-                              className="pl-9"
-                              type="url"
-                              placeholder="https://yourschool.edu"
-                              {...step1Form.register("website")}
-                            />
-                          </div>
-                          {step1Form.formState.errors.website && (
-                            <p className="text-xs text-red-500 mt-1">
-                              {step1Form.formState.errors.website.message}
-                            </p>
-                          )}
-                        </div>
+                    {/* Full Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="adminFullName">
+                        Full Name <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                        <Input
+                          id="adminFullName"
+                          placeholder="John Doe"
+                          className="pl-9"
+                          {...step1Form.register("adminFullName")}
+                        />
                       </div>
+                      {step1Form.formState.errors.adminFullName && (
+                        <p className="text-xs text-red-500">
+                          {step1Form.formState.errors.adminFullName.message}
+                        </p>
+                      )}
+                    </div>
 
-                      <div className="pt-6 flex justify-end">
-                        <Button
-                          type="submit"
-                          size="lg"
-                          className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 transition-all"
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="adminEmail">
+                        Email Address <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                        <Input
+                          id="adminEmail"
+                          type="email"
+                          placeholder="john@school.com"
+                          className="pl-9"
+                          {...step1Form.register("adminEmail")}
+                        />
+                      </div>
+                      {step1Form.formState.errors.adminEmail && (
+                        <p className="text-xs text-red-500">
+                          {step1Form.formState.errors.adminEmail.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="password">
+                        Password <span className="text-red-500">*</span>
+                      </Label>
+                      <PasswordInput
+                        id="password"
+                        placeholder="Create a strong password"
+                        showStrength
+                        {...step1Form.register("password")}
+                        value={password}
+                      />
+                      {step1Form.formState.errors.password && (
+                        <p className="text-xs text-red-500">
+                          {step1Form.formState.errors.password.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Password Requirements */}
+                    <PasswordRequirements password={password || ""} />
+
+                    {/* Confirm Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">
+                        Confirm Password <span className="text-red-500">*</span>
+                      </Label>
+                      <PasswordInput
+                        id="confirmPassword"
+                        placeholder="Re-enter your password"
+                        {...step1Form.register("confirmPassword")}
+                      />
+                      {step1Form.formState.errors.confirmPassword && (
+                        <p className="text-xs text-red-500">
+                          {step1Form.formState.errors.confirmPassword.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Navigation */}
+                    <div className="flex justify-end pt-6">
+                      <Button type="submit" className="min-w-32">
+                        Next <ArrowRight className="ml-2 w-4 h-4" />
+                      </Button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* STEP 2: School Details (WHAT) */}
+              {currentStep === 2 && (
+                <motion.div
+                  key="step2"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 overflow-y-auto"
+                >
+                  <form
+                    onSubmit={step2Form.handleSubmit(onStep2Submit)}
+                    className="space-y-6"
+                  >
+                    {/* School Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="schoolName">
+                        School Name <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                        <Input
+                          id="schoolName"
+                          placeholder="Springfield High School"
+                          className="pl-9"
+                          {...step2Form.register("schoolName")}
+                        />
+                      </div>
+                      {step2Form.formState.errors.schoolName && (
+                        <p className="text-xs text-red-500">
+                          {step2Form.formState.errors.schoolName.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Curriculum & School Type Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Curriculum */}
+                      <div className="space-y-2">
+                        <Label htmlFor="curriculum">
+                          Board/Curriculum{" "}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          onValueChange={(val) =>
+                            step2Form.setValue("curriculum", val as any)
+                          }
                         >
-                          Next Step <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select curriculum" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CBSE">CBSE</SelectItem>
+                            <SelectItem value="ICSE">ICSE</SelectItem>
+                            <SelectItem value="State Board">
+                              State Board
+                            </SelectItem>
+                            <SelectItem value="IB">
+                              IB (International Baccalaureate)
+                            </SelectItem>
+                            <SelectItem value="Cambridge/IGCSE">
+                              Cambridge/IGCSE
+                            </SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {step2Form.formState.errors.curriculum && (
+                          <p className="text-xs text-red-500">
+                            {step2Form.formState.errors.curriculum.message}
+                          </p>
+                        )}
                       </div>
-                    </form>
-                  </motion.div>
-                )}
 
-                {/* Step 2: Location */}
-                {currentStep === 2 && (
-                  <motion.div
-                    key="step2"
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 },
-                    }}
-                    className="absolute inset-0"
-                  >
-                    <form
-                      onSubmit={step2Form.handleSubmit(onStep2Submit)}
-                      className="space-y-6"
-                    >
-                      <div className="space-y-5">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="addressLine1"
-                            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                          >
-                            Address Line 1{" "}
-                            <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                              id="addressLine1"
-                              className="pl-9"
-                              placeholder="Street address"
-                              {...step2Form.register("addressLine1")}
-                            />
-                          </div>
-                          {step2Form.formState.errors.addressLine1 && (
-                            <p className="text-xs text-red-500 mt-1">
-                              {step2Form.formState.errors.addressLine1.message}
-                            </p>
-                          )}
-                        </div>
+                      {/* School Type */}
+                      <div className="space-y-2">
+                        <Label htmlFor="schoolType">
+                          School Type <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          onValueChange={(val) =>
+                            step2Form.setValue("schoolType", val as any)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="k12">K-12 School</SelectItem>
+                            <SelectItem value="higher_ed">
+                              Higher Education
+                            </SelectItem>
+                            <SelectItem value="vocational">
+                              Vocational/Technical
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {step2Form.formState.errors.schoolType && (
+                          <p className="text-xs text-red-500">
+                            {step2Form.formState.errors.schoolType.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="addressLine2"
-                            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                          >
-                            Address Line 2{" "}
-                            <span className="text-neutral-400 text-xs font-normal">
-                              (Optional)
-                            </span>
-                          </Label>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                              id="addressLine2"
-                              className="pl-9"
-                              placeholder="Apartment, suite, etc."
-                              {...step2Form.register("addressLine2")}
-                            />
-                          </div>
-                        </div>
+                    {/* Location Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="country">
+                          Country <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="country"
+                          {...step2Form.register("country")}
+                        />
+                        {step2Form.formState.errors.country && (
+                          <p className="text-xs text-red-500">
+                            {step2Form.formState.errors.country.message}
+                          </p>
+                        )}
+                      </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="city"
-                              className="text-neutral-700 dark:text-neutral-300"
-                            >
-                              City <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                              id="city"
-                              placeholder="City"
-                              {...step2Form.register("city")}
-                              className={`h-11 ${
-                                step2Form.formState.errors.city
-                                  ? "border-red-500 focus-visible:ring-red-500"
-                                  : ""
-                              }`}
-                            />
-                            {step2Form.formState.errors.city && (
-                              <p className="text-xs text-red-500">
-                                {step2Form.formState.errors.city.message}
-                              </p>
-                            )}
-                          </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">
+                          State/Province <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="state"
+                          placeholder="Maharashtra"
+                          {...step2Form.register("state")}
+                        />
+                        {step2Form.formState.errors.state && (
+                          <p className="text-xs text-red-500">
+                            {step2Form.formState.errors.state.message}
+                          </p>
+                        )}
+                      </div>
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="state"
-                              className="text-neutral-700 dark:text-neutral-300"
-                            >
-                              State/Province{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                              id="state"
-                              placeholder="State or Province"
-                              {...step2Form.register("state")}
-                              className={`h-11 ${
-                                step2Form.formState.errors.state
-                                  ? "border-red-500 focus-visible:ring-red-500"
-                                  : ""
-                              }`}
-                            />
-                            {step2Form.formState.errors.state && (
-                              <p className="text-xs text-red-500">
-                                {step2Form.formState.errors.state.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">
+                          City <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="city"
+                          placeholder="Mumbai"
+                          {...step2Form.register("city")}
+                        />
+                        {step2Form.formState.errors.city && (
+                          <p className="text-xs text-red-500">
+                            {step2Form.formState.errors.city.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="postalCode"
-                              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                            >
-                              Postal Code{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <div className="relative">
-                              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                              <Input
-                                id="postalCode"
-                                className="pl-9"
-                                placeholder="e.g., 12345"
-                                {...step2Form.register("postalCode")}
-                              />
-                            </div>
-                            {step2Form.formState.errors.postalCode && (
-                              <p className="text-xs text-red-500 mt-1">
-                                {step2Form.formState.errors.postalCode.message}
-                              </p>
-                            )}
-                          </div>
+                    {/* Student Count & Phone Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="studentCountRange">
+                          Number of Students{" "}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          onValueChange={(val) =>
+                            step2Form.setValue("studentCountRange", val as any)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select range" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1-100">1-100</SelectItem>
+                            <SelectItem value="101-500">101-500</SelectItem>
+                            <SelectItem value="501-1000">501-1000</SelectItem>
+                            <SelectItem value="1000+">1000+</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {step2Form.formState.errors.studentCountRange && (
+                          <p className="text-xs text-red-500">
+                            {
+                              step2Form.formState.errors.studentCountRange
+                                .message
+                            }
+                          </p>
+                        )}
+                      </div>
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="country"
-                              className="text-neutral-700 dark:text-neutral-300"
-                            >
-                              Country <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                              id="country"
-                              placeholder="Country"
-                              {...step2Form.register("country")}
-                              className={`h-11 ${
-                                step2Form.formState.errors.country
-                                  ? "border-red-500 focus-visible:ring-red-500"
-                                  : ""
-                              }`}
-                            />
-                            {step2Form.formState.errors.country && (
-                              <p className="text-xs text-red-500">
-                                {step2Form.formState.errors.country.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="phone"
-                            className="text-neutral-700 dark:text-neutral-300"
-                          >
-                            Phone Number <span className="text-red-500">*</span>
-                          </Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">
+                          Phone Number <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                           <Input
                             id="phone"
-                            type="tel"
-                            placeholder="+1 (555) 123-4567"
+                            placeholder="+91 98765 43210"
+                            className="pl-9"
                             {...step2Form.register("phone")}
-                            className={`h-11 ${
-                              step2Form.formState.errors.phone
-                                ? "border-red-500 focus-visible:ring-red-500"
-                                : ""
-                            }`}
                           />
-                          {step2Form.formState.errors.phone && (
-                            <p className="text-xs text-red-500">
-                              {step2Form.formState.errors.phone.message}
-                            </p>
-                          )}
                         </div>
+                        {step2Form.formState.errors.phone && (
+                          <p className="text-xs text-red-500">
+                            {step2Form.formState.errors.phone.message}
+                          </p>
+                        )}
                       </div>
+                    </div>
 
-                      <div className="pt-6 flex justify-between gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          onClick={prevStep}
-                          className="w-1/2"
-                        >
-                          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                        </Button>
-                        <Button
-                          type="submit"
-                          size="lg"
-                          className="w-1/2 bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-600/20"
-                        >
-                          Next Step <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
+                    {/* Website (Optional) */}
+                    <div className="space-y-2">
+                      <Label htmlFor="website">
+                        Website{" "}
+                        <span className="text-neutral-400">(Optional)</span>
+                      </Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                        <Input
+                          id="website"
+                          placeholder="https://www.yourschool.com"
+                          className="pl-9"
+                          {...step2Form.register("website")}
+                        />
                       </div>
-                    </form>
-                  </motion.div>
-                )}
+                      {step2Form.formState.errors.website && (
+                        <p className="text-xs text-red-500">
+                          {step2Form.formState.errors.website.message}
+                        </p>
+                      )}
+                    </div>
 
-                {/* Step 3: Admin Account */}
-                {currentStep === 3 && (
-                  <motion.div
-                    key="step3"
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 },
-                    }}
-                    className="absolute inset-0"
+                    {/* Navigation */}
+                    <div className="flex justify-between pt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevStep}
+                      >
+                        <ArrowLeft className="mr-2 w-4 h-4" /> Back
+                      </Button>
+                      <Button type="submit" className="min-w-32">
+                        Next <ArrowRight className="ml-2 w-4 h-4" />
+                      </Button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* STEP 3: Usage & Intent (HOW) */}
+              {currentStep === 3 && (
+                <motion.div
+                  key="step3"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 overflow-y-auto"
+                >
+                  <form
+                    onSubmit={step3Form.handleSubmit(onStep3Submit)}
+                    className="space-y-6"
                   >
-                    <form
-                      onSubmit={step3Form.handleSubmit(onStep3Submit)}
-                      className="space-y-6"
-                    >
-                      <div className="space-y-5">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="adminFullName"
-                            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                          >
-                            Full Name <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                              id="adminFullName"
-                              className="pl-9"
-                              placeholder="John Doe"
-                              {...step3Form.register("adminFullName")}
-                            />
-                          </div>
-                          {step3Form.formState.errors.adminFullName && (
-                            <p className="text-xs text-red-500 mt-1">
-                              {step3Form.formState.errors.adminFullName.message}
-                            </p>
-                          )}
-                        </div>
+                    {/* Role Selector */}
+                    <RoleSelector
+                      value={step3Form.watch("adminRole") || ""}
+                      onChange={(val) =>
+                        step3Form.setValue("adminRole", val as any)
+                      }
+                      error={step3Form.formState.errors.adminRole?.message}
+                    />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="adminEmail"
-                              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                            >
-                              Email <span className="text-red-500">*</span>
-                            </Label>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                              <Input
-                                id="adminEmail"
-                                className="pl-9"
-                                type="email"
-                                placeholder="admin@school.edu"
-                                {...step3Form.register("adminEmail")}
-                              />
-                            </div>
-                            {step3Form.formState.errors.adminEmail && (
-                              <p className="text-xs text-red-500 mt-1">
-                                {step3Form.formState.errors.adminEmail.message}
-                              </p>
+                    {/* Primary Goals Selector */}
+                    <PrimaryGoalsSelector
+                      value={step3Form.watch("primaryGoals") || []}
+                      onChange={(val) =>
+                        step3Form.setValue("primaryGoals", val as any)
+                      }
+                      error={step3Form.formState.errors.primaryGoals?.message}
+                    />
+
+                    {/* Expected Start Date */}
+                    <div className="space-y-2">
+                      <Label>
+                        Expected Start Date{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !step3Form.watch("expectedStartDate") &&
+                                "text-muted-foreground",
                             )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="adminPhone"
-                              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                            >
-                              Phone{" "}
-                              <span className="text-neutral-400 text-xs font-normal">
-                                (Optional)
-                              </span>
-                            </Label>
-                            <div className="relative">
-                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                              <Input
-                                id="adminPhone"
-                                className="pl-9"
-                                type="tel"
-                                placeholder="+1 (555) 123-4567"
-                                {...step3Form.register("adminPhone")}
-                              />
-                            </div>
-                            {step3Form.formState.errors.adminPhone && (
-                              <p className="text-xs text-red-500 mt-1">
-                                {step3Form.formState.errors.adminPhone.message}
-                              </p>
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {step3Form.watch("expectedStartDate") ? (
+                              format(
+                                step3Form.watch("expectedStartDate"),
+                                "PPP",
+                              )
+                            ) : (
+                              <span>Pick a date</span>
                             )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="password"
-                            className="text-neutral-700 dark:text-neutral-300"
-                          >
-                            Password <span className="text-red-500">*</span>
-                          </Label>
-                          <PasswordInput
-                            id="password"
-                            placeholder="••••••••"
-                            showStrength
-                            {...step3Form.register("password")}
-                            className={`h-11 ${
-                              step3Form.formState.errors.password
-                                ? "border-red-500 focus-visible:ring-red-500"
-                                : ""
-                            }`}
-                          />
-                          {step3Form.formState.errors.password && (
-                            <p className="text-xs text-red-500">
-                              {step3Form.formState.errors.password.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="confirmPassword"
-                            className="text-neutral-700 dark:text-neutral-300"
-                          >
-                            Confirm Password{" "}
-                            <span className="text-red-500">*</span>
-                          </Label>
-                          <PasswordInput
-                            id="confirmPassword"
-                            placeholder="••••••••"
-                            {...step3Form.register("confirmPassword")}
-                            className={`h-11 ${
-                              step3Form.formState.errors.confirmPassword
-                                ? "border-red-500 focus-visible:ring-red-500"
-                                : ""
-                            }`}
-                          />
-                          {step3Form.formState.errors.confirmPassword && (
-                            <p className="text-xs text-red-500">
-                              {
-                                step3Form.formState.errors.confirmPassword
-                                  .message
-                              }
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="pt-6 flex justify-between gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          onClick={prevStep}
-                          className="w-1/2"
-                        >
-                          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                        </Button>
-                        <Button
-                          type="submit"
-                          size="lg"
-                          className="w-1/2 bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-600/20"
-                        >
-                          Next Step <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      </div>
-                    </form>
-                  </motion.div>
-                )}
-
-                {/* Step 4: Preferences */}
-                {currentStep === 4 && (
-                  <motion.div
-                    key="step4"
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 },
-                    }}
-                    className="absolute inset-0"
-                  >
-                    <form
-                      onSubmit={step4Form.handleSubmit(onStep4Submit)}
-                      className="space-y-6"
-                    >
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 bg-neutral-100 dark:bg-neutral-800 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                        <SettingsIcon className="w-4 h-4 inline mr-2 text-neutral-500" />
-                        These settings are optional and can be changed later.
-                      </p>
-
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="academicYearStartMonth"
-                            className="text-neutral-700 dark:text-neutral-300"
-                          >
-                            Academic Year Start Month
-                          </Label>
-                          <Select
-                            onValueChange={(val) =>
-                              step4Form.setValue(
-                                "academicYearStartMonth",
-                                val as any,
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={step3Form.watch("expectedStartDate")}
+                            onSelect={(date) =>
+                              step3Form.setValue(
+                                "expectedStartDate",
+                                date as any,
                               )
                             }
-                            defaultValue={step4Form.getValues(
-                              "academicYearStartMonth",
-                            )}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select month" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[
-                                "January",
-                                "February",
-                                "March",
-                                "April",
-                                "May",
-                                "June",
-                                "July",
-                                "August",
-                                "September",
-                                "October",
-                                "November",
-                                "December",
-                              ].map((month) => (
-                                <SelectItem key={month} value={month}>
-                                  {month}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                            disabled={(date) =>
+                              date < new Date(new Date().setHours(0, 0, 0, 0))
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {step3Form.formState.errors.expectedStartDate && (
+                        <p className="text-xs text-red-500">
+                          {step3Form.formState.errors.expectedStartDate.message}
+                        </p>
+                      )}
+                    </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="primaryLanguage"
-                              className="text-neutral-700 dark:text-neutral-300"
-                            >
-                              Primary Language
-                            </Label>
-                            <Select
-                              onValueChange={(val) =>
-                                step4Form.setValue(
-                                  "primaryLanguage",
-                                  val as any,
-                                )
-                              }
-                              defaultValue={step4Form.getValues(
-                                "primaryLanguage",
-                              )}
-                            >
-                              <SelectTrigger className="h-11">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="English">English</SelectItem>
-                                <SelectItem value="Hindi">Hindi</SelectItem>
-                                <SelectItem value="Spanish">Spanish</SelectItem>
-                                <SelectItem value="French">French</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                    {/* Invite Staff */}
+                    <InviteStaffInput
+                      value={step3Form.watch("inviteStaffEmails") || []}
+                      onChange={(val) =>
+                        step3Form.setValue("inviteStaffEmails", val)
+                      }
+                      error={
+                        step3Form.formState.errors.inviteStaffEmails?.message
+                      }
+                    />
 
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="timezone"
-                              className="text-neutral-700 dark:text-neutral-300"
-                            >
-                              Timezone
-                            </Label>
-                            <Select
-                              onValueChange={(val) =>
-                                step4Form.setValue("timezone", val)
-                              }
-                              defaultValue={step4Form.getValues("timezone")}
-                            >
-                              <SelectTrigger className="h-11">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Asia/Kolkata">
-                                  Asia/Kolkata (IST)
-                                </SelectItem>
-                                <SelectItem value="America/New_York">
-                                  America/New York (EST)
-                                </SelectItem>
-                                <SelectItem value="America/Los_Angeles">
-                                  America/Los Angeles (PST)
-                                </SelectItem>
-                                <SelectItem value="Europe/London">
-                                  Europe/London (GMT)
-                                </SelectItem>
-                                <SelectItem value="Australia/Sydney">
-                                  Australia/Sydney (AEDT)
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
+                    {/* Navigation */}
+                    <div className="flex justify-between pt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevStep}
+                      >
+                        <ArrowLeft className="mr-2 w-4 h-4" /> Back
+                      </Button>
+                      <Button type="submit" className="min-w-32">
+                        Next <ArrowRight className="ml-2 w-4 h-4" />
+                      </Button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
 
-                      <div className="pt-6 flex justify-between gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          onClick={prevStep}
-                          className="w-1/2"
-                        >
-                          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                        </Button>
-                        <Button
-                          type="submit"
-                          size="lg"
-                          className="w-1/2 bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-600/20"
-                        >
-                          Next Step <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      </div>
-                    </form>
-                  </motion.div>
-                )}
-
-                {/* Step 5: Review */}
-                {currentStep === 5 && (
-                  <motion.div
-                    key="step5"
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 },
-                    }}
-                    className="absolute inset-0"
+              {/* STEP 4: Review & Create */}
+              {currentStep === 4 && (
+                <motion.div
+                  key="step4"
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 overflow-y-auto"
+                >
+                  <form
+                    onSubmit={step4Form.handleSubmit(onFinalSubmit)}
+                    className="space-y-6"
                   >
-                    <form
-                      onSubmit={step5Form.handleSubmit(onFinalSubmit)}
-                      className="space-y-6"
-                    >
-                      {/* Review Summary */}
-                      <div className="space-y-4 p-5 bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                        <div>
-                          <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3 flex items-center gap-2">
-                            <Building2 className="w-4 h-4 text-brand-500" />{" "}
-                            School Information
-                          </h3>
-                          <div className="grid grid-cols-2 gap-y-2 text-sm pl-6">
-                            <span className="text-neutral-500">Name:</span>{" "}
-                            <span className="font-medium text-neutral-900 dark:text-white">
-                              {step1Form.getValues("schoolName")}
-                            </span>
-                            <span className="text-neutral-500">Type:</span>{" "}
-                            <span className="font-medium text-neutral-900 dark:text-white">
-                              {step1Form.getValues("schoolType")}
-                            </span>
-                            <span className="text-neutral-500">Students:</span>{" "}
-                            <span className="font-medium text-neutral-900 dark:text-white">
-                              {step1Form.getValues("studentCountRange")}
-                            </span>
+                    {/* Summary */}
+                    <div className="space-y-6">
+                      {/* Account Section */}
+                      <div className="space-y-3 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <User className="w-5 h-5 text-orange-600" />
+                          Your Account
+                        </h3>
+                        <dl className="grid grid-cols-1 gap-2 text-sm">
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Name</dt>
+                            <dd className="font-medium">
+                              {step1Form.getValues("adminFullName")}
+                            </dd>
                           </div>
-                        </div>
-
-                        <div className="border-t border-neutral-200 dark:border-neutral-800 pt-3">
-                          <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3 flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-brand-500" />{" "}
-                            Location
-                          </h3>
-                          <div className="space-y-1 text-sm pl-6">
-                            <p className="text-neutral-900 dark:text-white">
-                              {step2Form.getValues("addressLine1")}
-                            </p>
-                            <p className="text-neutral-900 dark:text-white">
-                              {step2Form.getValues("city")},{" "}
-                              {step2Form.getValues("state")}{" "}
-                              {step2Form.getValues("postalCode")}
-                            </p>
-                            <p className="text-neutral-900 dark:text-white">
-                              {step2Form.getValues("country")}
-                            </p>
-                            <p className="mt-2">
-                              <span className="text-neutral-500">Phone:</span>{" "}
-                              <span className="font-medium text-neutral-900 dark:text-white">
-                                {step2Form.getValues("phone")}
-                              </span>
-                            </p>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Email</dt>
+                            <dd className="font-medium">
+                              {step1Form.getValues("adminEmail")}
+                            </dd>
                           </div>
-                        </div>
-
-                        <div className="border-t border-neutral-200 dark:border-neutral-800 pt-3">
-                          <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-3 flex items-center gap-2">
-                            <UserCircle className="w-4 h-4 text-brand-500" />{" "}
-                            Administrator
-                          </h3>
-                          <div className="space-y-1 text-sm pl-6">
-                            <p className="font-medium text-neutral-900 dark:text-white">
-                              {step3Form.getValues("adminFullName")}
-                            </p>
-                            <p className="text-neutral-500">
-                              {step3Form.getValues("adminEmail")}
-                            </p>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Role</dt>
+                            <dd className="font-medium">
+                              {step3Form.getValues("adminRole")}
+                            </dd>
                           </div>
-                        </div>
+                        </dl>
                       </div>
 
-                      {/* Terms & Conditions */}
-                      <div className="flex items-start space-x-3 bg-white dark:bg-neutral-950 p-4 rounded-lg border border-neutral-100 dark:border-neutral-800">
+                      {/* School Information Section */}
+                      <div className="space-y-3 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Building2 className="w-5 h-5 text-orange-600" />
+                          School Information
+                        </h3>
+                        <dl className="grid grid-cols-1 gap-2 text-sm">
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Name</dt>
+                            <dd className="font-medium">
+                              {step2Form.getValues("schoolName")}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">
+                              Board/Curriculum
+                            </dt>
+                            <dd className="font-medium">
+                              {step2Form.getValues("curriculum")}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Location</dt>
+                            <dd className="font-medium">
+                              {step2Form.getValues("city")},{" "}
+                              {step2Form.getValues("state")},{" "}
+                              {step2Form.getValues("country")}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Students</dt>
+                            <dd className="font-medium">
+                              {step2Form.getValues("studentCountRange")}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Phone</dt>
+                            <dd className="font-medium">
+                              {step2Form.getValues("phone")}
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      {/* Usage Intent Section */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Target className="w-5 h-5 text-orange-600" />
+                          Usage Intent
+                        </h3>
+                        <dl className="grid grid-cols-1 gap-2 text-sm">
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Primary Goals</dt>
+                            <dd className="font-medium">
+                              {step3Form.getValues("primaryGoals")?.join(", ")}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between">
+                            <dt className="text-neutral-500">Start Date</dt>
+                            <dd className="font-medium">
+                              {step3Form.getValues("expectedStartDate")
+                                ? format(
+                                    step3Form.getValues("expectedStartDate"),
+                                    "PPP",
+                                  )
+                                : "Not set"}
+                            </dd>
+                          </div>
+                          {step3Form.getValues("inviteStaffEmails")?.length >
+                            0 && (
+                            <div className="flex justify-between">
+                              <dt className="text-neutral-500">
+                                Staff to Invite
+                              </dt>
+                              <dd className="font-medium">
+                                {
+                                  step3Form.getValues("inviteStaffEmails")
+                                    ?.length
+                                }{" "}
+                                members
+                              </dd>
+                            </div>
+                          )}
+                        </dl>
+                      </div>
+                    </div>
+
+                    {/* Terms & Conditions */}
+                    <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                      <div className="flex items-start space-x-3">
                         <Checkbox
                           id="acceptTerms"
-                          checked={step5Form.watch("acceptTerms")}
+                          checked={step4Form.watch("acceptTerms")}
                           onCheckedChange={(checked) =>
-                            step5Form.setValue(
+                            step4Form.setValue(
                               "acceptTerms",
                               checked as boolean,
                             )
                           }
-                          className="mt-1"
                         />
                         <label
                           htmlFor="acceptTerms"
-                          className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed cursor-pointer"
+                          className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer"
                         >
-                          I agree to the{" "}
+                          I accept the{" "}
                           <a
                             href="/terms"
-                            className="text-brand-600 hover:underline font-medium"
                             target="_blank"
+                            className="text-orange-600 hover:underline"
                           >
-                            Terms of Service
-                          </a>{" "}
-                          and{" "}
-                          <a
-                            href="/privacy"
-                            className="text-brand-600 hover:underline font-medium"
-                            target="_blank"
-                          >
-                            Privacy Policy
+                            Terms and Conditions
                           </a>
-                          . I confirm that I am an authorized administrator for
-                          this school.
                         </label>
                       </div>
-                      {step5Form.formState.errors.acceptTerms && (
-                        <p className="text-xs text-red-500 pl-4">
-                          {step5Form.formState.errors.acceptTerms.message}
+                      {step4Form.formState.errors.acceptTerms && (
+                        <p className="text-xs text-red-500 ml-7">
+                          {step4Form.formState.errors.acceptTerms.message}
                         </p>
                       )}
 
-                      <div className="pt-6 flex justify-between gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          onClick={prevStep}
-                          className="w-1/2"
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="acceptPrivacy"
+                          checked={step4Form.watch("acceptPrivacy")}
+                          onCheckedChange={(checked) =>
+                            step4Form.setValue(
+                              "acceptPrivacy",
+                              checked as boolean,
+                            )
+                          }
+                        />
+                        <label
+                          htmlFor="acceptPrivacy"
+                          className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer"
                         >
-                          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={isLoading}
-                          size="lg"
-                          className="w-1/2 bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-600/20"
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Registering...
-                            </>
-                          ) : (
-                            <>
-                              Complete Registration{" "}
-                              <CheckCircle2 className="w-4 h-4 ml-2" />
-                            </>
-                          )}
-                        </Button>
+                          I accept the{" "}
+                          <a
+                            href="/privacy"
+                            target="_blank"
+                            className="text-orange-600 hover:underline"
+                          >
+                            Privacy Policy
+                          </a>
+                        </label>
                       </div>
-                    </form>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                      {step4Form.formState.errors.acceptPrivacy && (
+                        <p className="text-xs text-red-500 ml-7">
+                          {step4Form.formState.errors.acceptPrivacy.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Navigation */}
+                    <div className="flex justify-between pt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevStep}
+                        disabled={isLoading}
+                      >
+                        <ArrowLeft className="mr-2 w-4 h-4" /> Back
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="min-w-40"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="mr-2 w-4 h-4" />
+                            Create Account
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

@@ -47,7 +47,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
         <div className="flex-1 flex flex-col justify-center items-center p-4 sm:p-8 xl:p-12 relative z-10">
           {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 bg-grid-slate/[0.05] bg-[size:40px_40px] pointer-events-none" />
+          <div className="absolute inset-0 bg-grid-slate/[0.05] bg-size-[40px_40px] pointer-events-none" />
 
           <motion.div
             className="w-full max-w-5xl mx-auto relative z-10"

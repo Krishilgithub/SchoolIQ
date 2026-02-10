@@ -111,9 +111,9 @@ export function TeacherSidebar() {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="flex h-full w-[280px] flex-col bg-gradient-to-b from-white via-white to-orange-50/30 border-r border-gray-200/80 shadow-xl [&::-webkit-scrollbar]:hidden relative overflow-hidden">
+    <div className="flex h-full w-70 flex-col bg-gradient-to-b from-white via-white to-orange-50/30 border-r border-gray-200/80 shadow-xl [&::-webkit-scrollbar]:hidden relative overflow-hidden">
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/2 via-transparent to-transparent pointer-events-none" />
 
       {/* Header with refined spacing and gradient */}
       <div className="flex h-16 items-center px-6 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/30 relative z-10">
@@ -160,7 +160,7 @@ export function TeacherSidebar() {
                   className={cn(
                     "group relative flex items-center justify-between rounded-xl px-3 py-3 text-[13px] font-medium transition-all duration-300",
                     isActive
-                      ? "bg-gradient-to-r from-orange-500/10 via-orange-500/[0.08] to-transparent text-orange-700 shadow-sm"
+                      ? "bg-gradient-to-r from-orange-500/10 via-orange-500/8 to-transparent text-orange-700 shadow-sm"
                       : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900 hover:shadow-sm",
                   )}
                 >
@@ -190,7 +190,7 @@ export function TeacherSidebar() {
                     >
                       <item.icon
                         className={cn(
-                          "h-[18px] w-[18px] transition-all duration-300",
+                          "h-4.5 w-4.5 transition-all duration-300",
                           isActive
                             ? "text-orange-600"
                             : "text-gray-500 group-hover:text-gray-700",
@@ -204,7 +204,7 @@ export function TeacherSidebar() {
                   {item.badge && (
                     <motion.span
                       className={cn(
-                        "flex h-5 min-w-[20px] items-center justify-center rounded-full text-[10px] font-bold px-1.5 shadow-sm",
+                        "flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-bold px-1.5 shadow-sm",
                         isActive
                           ? "bg-orange-600 text-white"
                           : "bg-gray-200 text-gray-700 group-hover:bg-gray-300",
@@ -264,7 +264,7 @@ export function TeacherSidebar() {
                   className={cn(
                     "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-300",
                     isActive
-                      ? "bg-gradient-to-r from-orange-500/10 via-orange-500/[0.08] to-transparent text-orange-700 shadow-sm"
+                      ? "bg-gradient-to-r from-orange-500/10 via-orange-500/8 to-transparent text-orange-700 shadow-sm"
                       : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900",
                   )}
                 >
@@ -292,7 +292,7 @@ export function TeacherSidebar() {
                   >
                     <item.icon
                       className={cn(
-                        "h-[17px] w-[17px] transition-colors duration-300",
+                        "h-4.25 w-4.25 transition-colors duration-300",
                         isActive
                           ? "text-orange-600"
                           : "text-gray-500 group-hover:text-gray-700",
@@ -322,7 +322,7 @@ export function TeacherSidebar() {
               whileHover={{ scale: 1.05, rotate: 90 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Settings className="h-[17px] w-[17px] text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
+              <Settings className="h-4.25 w-4.25 text-gray-500 group-hover:text-gray-700 transition-colors duration-300" />
             </motion.div>
             <span>Settings</span>
           </Link>
@@ -379,7 +379,14 @@ export function TeacherSidebar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
             <DropdownMenuItem
-              onClick={async () => await signOut()}
+              onSelect={async (e) => {
+                e.preventDefault();
+                try {
+                  await signOut();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                }
+              }}
               className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium"
             >
               <LogOut className="mr-2 h-4 w-4" />

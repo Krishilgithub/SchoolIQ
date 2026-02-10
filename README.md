@@ -236,3 +236,55 @@ Each module owns:
 - Neon
 - Redis
 - Docker (recommended)
+### Email Configuration
+
+SchoolIQ sends automated emails for various events (registration, password resets, notifications, etc.). To enable email functionality:
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Configure SMTP settings in `.env.local`:**
+   
+   **Option 1: Gmail (Easiest for testing)**
+   ```env
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASSWORD=your-app-password
+   SMTP_FROM=noreply@yourschool.com
+   ```
+   
+   To get an App Password for Gmail:
+   - Enable 2-Factor Authentication on your Google account
+   - Visit https://myaccount.google.com/apppasswords
+   - Generate an App Password for "Mail"
+   - Use that password as `SMTP_PASSWORD`
+
+   **Option 2: SendGrid**
+   ```env
+   SMTP_HOST=smtp.sendgrid.net
+   SMTP_PORT=587
+   SMTP_USER=apikey
+   SMTP_PASSWORD=your_sendgrid_api_key
+   SMTP_FROM=noreply@yourschool.com
+   ```
+
+   **Option 3: Mailgun**
+   ```env
+   SMTP_HOST=smtp.mailgun.org
+   SMTP_PORT=587
+   SMTP_USER=your_mailgun_smtp_username
+   SMTP_PASSWORD=your_mailgun_smtp_password
+   SMTP_FROM=noreply@yourschool.com
+   ```
+
+3. **Email Features Include:**
+   - Welcome emails after school registration
+   - Admin credential emails
+   - Password reset emails
+   - Staff invitation emails
+   - Notification emails
+
+> **Note:** Email functionality is optional for development. The application will log email errors but continue to function if SMTP is not configured.

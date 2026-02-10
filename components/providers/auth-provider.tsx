@@ -47,15 +47,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfileAndSchool = useCallback(
     async (userId: string) => {
       try {
-        const [profileResult, schoolMemberResult] = await Promise.all([
-          supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (supabase as any)
-            .from("school_members")
-            .select("school_id")
-            .eq("user_id", userId)
-            .maybeSingle(),
-        ]);
+        // Fetch profile first
+        const profileResult = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle();
 
         if (profileResult.error) {
           console.error(
@@ -65,9 +62,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (profileResult.data) {
           setProfile(profileResult.data);
         } else {
-          // Profile doesn't exist. User must contact support or trigger must handle it.
           console.warn(`Profile missing for user ${userId}`);
         }
+
+        // Check for school assignment in school_admins table first (for admins created by super-admin)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const schoolAdminResult = await (supabase as any)
+          .from("school_admins")
+          .select("school_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (schoolAdminResult.data) {
+          // Found school assignment in school_admins
+          setSchoolId(schoolAdminResult.data.school_id);
+          return;
+        }
+
+        // If not found in school_admins, check school_members (for regular users)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const schoolMemberResult = await (supabase as any)
+          .from("school_members")
+          .select("school_id")
+          .eq("user_id", userId)
+          .maybeSingle();
 
         if (schoolMemberResult.error) {
           console.error(
@@ -76,6 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           );
         } else if (schoolMemberResult.data) {
           setSchoolId(schoolMemberResult.data.school_id);
+        } else {
+          console.warn(`No school assigned to user ${userId}`);
         }
       } catch (error) {
         console.error("Unexpected error fetching profile/school:", error);
@@ -130,8 +150,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, router, fetchProfileAndSchool]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/auth/login");
+    try {
+      // Clear local state immediately
+      setProfile(null);
+      setSchoolId(null);
+      setUser(null);
+      setSession(null);
+
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+
+      // Force redirect to login
+      router.push("/auth/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Still redirect even if there's an error
+      router.push("/auth/login");
+    }
   };
 
   const value = {

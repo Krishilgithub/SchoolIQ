@@ -13,6 +13,13 @@ export interface AdminCredentialsEmailParams {
   loginUrl?: string;
 }
 
+export interface WelcomeEmailParams {
+  adminEmail: string;
+  adminName: string;
+  schoolName: string;
+  loginUrl?: string;
+}
+
 export interface EmailResponse {
   success: boolean;
   messageId?: string;

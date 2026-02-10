@@ -1,0 +1,5 @@
+app/api/register-school/route.ts(148,1): error TS1434: Unexpected keyword or identifier.
+app/api/register-school/route.ts(148,8): error TS1434: Unexpected keyword or identifier.
+app/api/register-school/route.ts(148,14): error TS1434: Unexpected keyword or identifier.
+app/api/register-school/route.ts(148,29): error TS1005: '(' expected.
+app/api/register-school/route.ts(149,5): error TS1005: ')' expected.
