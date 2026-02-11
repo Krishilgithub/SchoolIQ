@@ -10,7 +10,7 @@ import { format } from "date-fns";
 export default async function AttendancePage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   const today = format(new Date(), "yyyy-MM-dd");

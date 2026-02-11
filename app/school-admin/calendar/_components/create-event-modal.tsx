@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -62,7 +62,13 @@ export function CreateEventModal({
   const { schoolId } = useCurrentSchool();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // @ts-ignore - zodResolver type incompatibility with boolean fields
   const form = useForm<CreateEventValues>({
     resolver: zodResolver(createEventSchema),
     defaultValues: {
@@ -72,6 +78,7 @@ export function CreateEventModal({
       location: "",
       is_all_day: false,
       start_date: defaultDate || new Date(),
+      end_date: undefined,
     },
   });
 
@@ -93,9 +100,13 @@ export function CreateEventModal({
     }
   }
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Add New Event</DialogTitle>
           <DialogDescription>
@@ -136,6 +147,7 @@ export function CreateEventModal({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="exam">Exam</SelectItem>
                         <SelectItem value="holiday">Holiday</SelectItem>
                         <SelectItem value="deadline">Deadline</SelectItem>
                         <SelectItem value="meeting">Meeting</SelectItem>
@@ -150,7 +162,7 @@ export function CreateEventModal({
                 control={form.control}
                 name="is_all_day"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm mt-auto h-10 items-center py-0">
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 shadow-sm mt-auto h-10 py-0">
                     <FormControl>
                       <Checkbox
                         checked={field.value}

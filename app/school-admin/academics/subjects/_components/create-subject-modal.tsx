@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -41,8 +41,13 @@ interface CreateSubjectModalProps {
 
 export function CreateSubjectModal({ schoolId }: CreateSubjectModalProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<z.infer<typeof createSubjectSchema>>({
     resolver: zodResolver(createSubjectSchema),
@@ -78,6 +83,15 @@ export function CreateSubjectModal({ schoolId }: CreateSubjectModalProps) {
     }
   }
 
+  if (!mounted) {
+    return (
+      <Button className="gap-2">
+        <Plus className="h-4 w-4" />
+        Add Subject
+      </Button>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -86,7 +100,7 @@ export function CreateSubjectModal({ schoolId }: CreateSubjectModalProps) {
           Add Subject
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Add New Subject</DialogTitle>
           <DialogDescription>

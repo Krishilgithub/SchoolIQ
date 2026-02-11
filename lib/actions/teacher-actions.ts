@@ -8,7 +8,7 @@ export async function getTeachersAction(
   schoolId: string,
   params: { search?: string } = {},
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase
     .from("profiles")
     .select("*")
@@ -30,7 +30,7 @@ export async function getTeachersAction(
 }
 
 export async function deleteTeacherAction(teacherId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   // Logic to delete or soft delete. For profiles, usually we disable access rather than delete,
   // but assuming standard delete for now or calling a stored procedure if complex cleanup needed.
   // However, profiles are linked to auth.users. Deleting a profile might not be enough if auth user remains.

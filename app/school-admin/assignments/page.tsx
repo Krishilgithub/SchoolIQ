@@ -17,7 +17,7 @@ import {
 export default async function AssignmentsPage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   const assignments = await getAssignmentsAction(schoolId);

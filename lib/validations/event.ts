@@ -14,14 +14,17 @@ export const createEventSchema = z
       required_error: "Start date is required",
     }),
     end_date: z.date().optional(),
-    event_type: z.enum(["holiday", "event", "deadline", "meeting", "other"], {
-      required_error: "Event type is required",
-    }),
+    event_type: z.enum(
+      ["holiday", "event", "deadline", "meeting", "exam", "other"],
+      {
+        required_error: "Event type is required",
+      },
+    ),
     location: z
       .string()
       .max(100, "Location must be less than 100 characters")
       .optional(),
-    is_all_day: z.boolean().default(false),
+    is_all_day: z.boolean(),
   })
   .refine(
     (data) => {
@@ -36,4 +39,5 @@ export const createEventSchema = z
     },
   );
 
+export type CreateEventInput = z.input<typeof createEventSchema>;
 export type CreateEventValues = z.infer<typeof createEventSchema>;

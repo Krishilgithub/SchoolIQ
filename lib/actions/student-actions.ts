@@ -8,7 +8,7 @@ export async function getStudentsAction(
   schoolId: string,
   params: { search?: string; gradeLevel?: string } = {},
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase.from("students").select("*").eq("school_id", schoolId);
 
   if (params.search) {
@@ -32,7 +32,7 @@ export async function getStudentsAction(
 }
 
 export async function deleteStudentAction(studentId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("students")
     .delete()

@@ -11,7 +11,7 @@ export async function getAssignmentsAction(
   schoolId: string,
   params: { classId?: string; subjectId?: string; teacherId?: string } = {},
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase
     .from("assignments")
     .select(
@@ -48,7 +48,7 @@ export async function createAssignmentAction(
   schoolId: string,
   params: CreateAssignmentParams,
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // In a real app, we should get the teacher_id from the current user session if they are a teacher
   // For now assuming the teacher_id is passed or handled differently, but the params dont have it?
@@ -97,7 +97,7 @@ export async function createAssignmentAction(
 }
 
 export async function deleteAssignmentAction(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("assignments").delete().eq("id", id);
   if (error) {
     console.error("Error deleting assignment:", error);

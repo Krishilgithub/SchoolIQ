@@ -7,7 +7,7 @@ import { CreateAssignmentForm } from "./_components/create-assignment-form";
 export default async function CreateAssignmentPage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   const [classes, subjects] = await Promise.all([

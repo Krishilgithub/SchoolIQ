@@ -8,7 +8,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 export async function getAnnouncementsAction(schoolId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("announcements")
     .select(
@@ -35,7 +35,7 @@ export async function createAnnouncementAction(
   schoolId: string,
   params: CreateAnnouncementParams,
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -68,7 +68,7 @@ export async function createAnnouncementAction(
 }
 
 export async function deleteAnnouncementAction(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("announcements").delete().eq("id", id);
 
   if (error) {

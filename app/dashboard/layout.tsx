@@ -30,7 +30,7 @@ export default async function DashboardLayout({
 
   const role = userProfile?.role;
   const isStudent = role === "student";
-  const isParent = role === "parent";
+  const isParent = role === "guardian";
   const isTeacher = role === "teacher";
   const isAdmin = role === "admin" || role === "school_admin";
 

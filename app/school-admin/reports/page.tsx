@@ -18,7 +18,7 @@ import { Overview } from "@/components/dashboard/overview"; // Assuming this exi
 export default async function ReportsPage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   const [stats, attendanceReport, studentDistribution] = await Promise.all([

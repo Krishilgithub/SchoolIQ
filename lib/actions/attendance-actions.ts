@@ -12,8 +12,30 @@ export async function getAttendanceAction(
   schoolId: string,
   params: { date?: string; studentId?: string } = {},
 ) {
-  const supabase = createClient();
-  let query = supabase.from("attendance").select("*").eq("school_id", schoolId);
+  const supabase = await createClient();
+  
+  // Get student IDs for the school
+  const { data: students, error: studentError } = await supabase
+    .from("students")
+    .select("id")
+    .eq("school_id", schoolId);
+
+  if (studentError) {
+    console.error("Error fetching students:", studentError);
+    throw new Error(studentError.message);
+  }
+
+  const studentIds = students?.map((s) => s.id) || [];
+
+  if (studentIds.length === 0) {
+    return [];
+  }
+
+  // Build attendance query
+  let query = supabase
+    .from("student_attendance")
+    .select("*")
+    .in("student_id", studentIds);
 
   if (params.date) {
     query = query.eq("date", params.date);
@@ -36,13 +58,24 @@ export async function upsertAttendanceAction(
   schoolId: string,
   attendanceData: CreateAttendanceParams,
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
+
+  // Verify student belongs to this school
+  const { data: student, error: studentError } = await supabase
+    .from("students")
+    .select("id")
+    .eq("id", attendanceData.student_id)
+    .eq("school_id", schoolId)
+    .single();
+
+  if (studentError || !student) {
+    throw new Error("Student not found or doesn't belong to this school");
+  }
 
   // Check if record exists for student on that date
   const { data: existing } = await supabase
-    .from("attendance")
+    .from("student_attendance")
     .select("id")
-    .eq("school_id", schoolId)
     .eq("student_id", attendanceData.student_id)
     .eq("date", attendanceData.date)
     .single();
@@ -51,10 +84,10 @@ export async function upsertAttendanceAction(
   if (existing) {
     // Update
     result = await supabase
-      .from("attendance")
+      .from("student_attendance")
       .update({
         status: attendanceData.status,
-        reason: attendanceData.reason,
+        remarks: attendanceData.reason,
         updated_at: new Date().toISOString(),
       })
       .eq("id", existing.id)
@@ -63,10 +96,14 @@ export async function upsertAttendanceAction(
   } else {
     // Insert
     result = await supabase
-      .from("attendance")
+      .from("student_attendance")
       .insert({
-        ...attendanceData,
-        school_id: schoolId,
+        student_id: attendanceData.student_id,
+        class_id: attendanceData.class_id,
+        date: attendanceData.date,
+        status: attendanceData.status,
+        remarks: attendanceData.reason,
+        marked_by: attendanceData.marked_by,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -87,32 +124,45 @@ export async function getAttendanceStatsAction(
   schoolId: string,
   date: string,
 ): Promise<AttendanceStats> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
-  // Get total students
-  const { count: totalStudents, error: studentError } = await supabase
+  // Get all student IDs for the school
+  const { data: students, error: studentError } = await supabase
     .from("students")
-    .select("*", { count: "exact", head: true })
+    .select("id")
     .eq("school_id", schoolId)
-    .eq("status", "active");
+    .eq("is_active", true);
 
   if (studentError) throw new Error(studentError.message);
 
+  const studentIds = students?.map((s) => s.id) || [];
+  const totalStudents = studentIds.length;
+
+  if (totalStudents === 0) {
+    return {
+      total_students: 0,
+      present_count: 0,
+      absent_count: 0,
+      late_count: 0,
+      attendance_percentage: 0,
+    };
+  }
+
   // Get attendance for the date
   const { data: attendance, error: attendanceError } = await supabase
-    .from("attendance")
+    .from("student_attendance")
     .select("status")
-    .eq("school_id", schoolId)
-    .eq("date", date);
+    .eq("date", date)
+    .in("student_id", studentIds);
 
   if (attendanceError) throw new Error(attendanceError.message);
 
-  const present = attendance.filter((a) => a.status === "present").length;
-  const absent = attendance.filter((a) => a.status === "absent").length;
-  const late = attendance.filter((a) => a.status === "late").length;
+  const present = attendance?.filter((a) => a.status === "present").length || 0;
+  const absent = attendance?.filter((a) => a.status === "absent").length || 0;
+  const late = attendance?.filter((a) => a.status === "late").length || 0;
 
   return {
-    total_students: totalStudents || 0,
+    total_students: totalStudents,
     present_count: present,
     absent_count: absent,
     late_count: late,

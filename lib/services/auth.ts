@@ -34,19 +34,54 @@ export async function getCurrentSchoolId(): Promise<string | null> {
     return null;
   }
 
-  // Get school admin record
+  // First, try to get school ID from school_admins table
   const { data: schoolAdmin, error: schoolAdminError } = await supabase
     .from("school_admins")
     .select("school_id")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (schoolAdminError || !schoolAdmin) {
-    console.error("Failed to get school admin:", schoolAdminError);
-    return null;
+  if (schoolAdmin?.school_id) {
+    return schoolAdmin.school_id;
   }
 
-  return schoolAdmin.school_id;
+  // Fallback: Check school_members table for admin role
+  const { data: schoolMember, error: schoolMemberError } = await supabase
+    .from("school_members")
+    .select("school_id, role")
+    .eq("user_id", user.id)
+    .eq("role", "school_admin")
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (schoolMember?.school_id) {
+    console.warn(
+      "Admin user found in school_members but not in school_admins. Run fix_school_admin_access.sql to fix this.",
+    );
+    return schoolMember.school_id;
+  }
+
+  // Last fallback: Check profile for school_id
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("school_id, role")
+    .eq("id", user.id)
+    .eq("role", "school_admin")
+    .maybeSingle();
+
+  if (profile?.school_id) {
+    console.warn(
+      "Admin user has school_id in profile but not in school_admins. Run fix_school_admin_access.sql to fix this.",
+    );
+    return profile.school_id;
+  }
+
+  console.error("No school found for admin user:", {
+    userId: user.id,
+    schoolAdminError,
+    schoolMemberError,
+  });
+  return null;
 }
 
 /**

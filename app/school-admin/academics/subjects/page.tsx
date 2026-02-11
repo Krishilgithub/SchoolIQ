@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { getCurrentSchoolId } from "@/hooks/use-current-school";
+import { getCurrentSchoolId } from "@/lib/services/auth";
 import { redirect } from "next/navigation";
 import { SubjectList } from "./_components/subject-list";
 import { CreateSubjectModal } from "./_components/create-subject-modal";
@@ -14,7 +14,7 @@ export default async function SubjectsPage() {
   const schoolId = await getCurrentSchoolId();
 
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   return (

@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 export default async function TeachersPage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   const teachers = await getTeachersAction(schoolId);

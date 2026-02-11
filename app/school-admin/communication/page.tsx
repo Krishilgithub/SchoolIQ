@@ -16,7 +16,7 @@ import { CreateAnnouncementModal } from "./_components/create-announcement-modal
 export default async function CommunicationPage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   const announcements = await getAnnouncementsAction(schoolId);

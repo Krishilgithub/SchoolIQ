@@ -11,7 +11,19 @@ import {
 export async function getDashboardStatsAction(
   schoolId: string,
 ): Promise<DashboardStats> {
-  const supabase = createClient();
+  const supabase = await createClient();
+
+  // First get student IDs for the school
+  const { data: students, error: studentsError } = await supabase
+    .from("students")
+    .select("id")
+    .eq("school_id", schoolId);
+
+  if (studentsError) {
+    console.error("Error fetching students for stats:", studentsError);
+  }
+
+  const studentIds = students?.map((s) => s.id) || [];
 
   const [
     { count: totalStudents },
@@ -20,10 +32,10 @@ export async function getDashboardStatsAction(
     { data: attendanceData }, // Determine attendance rate from recent records
   ] = await Promise.all([
     supabase
-      .from("profiles")
+      .from("students")
       .select("*", { count: "exact", head: true })
       .eq("school_id", schoolId)
-      .eq("role", "student"),
+      .eq("is_active", true),
     supabase
       .from("profiles")
       .select("*", { count: "exact", head: true })
@@ -33,11 +45,13 @@ export async function getDashboardStatsAction(
       .from("classes")
       .select("*", { count: "exact", head: true })
       .eq("school_id", schoolId),
-    supabase
-      .from("attendance")
-      .select("status")
-      .eq("school_id", schoolId)
-      .limit(1000), // Sample recent 1000 records
+    studentIds.length > 0
+      ? supabase
+          .from("student_attendance")
+          .select("status")
+          .in("student_id", studentIds)
+          .limit(1000) // Sample recent 1000 records
+      : Promise.resolve({ data: [] }),
   ]);
 
   let attendanceRate = 0;
@@ -75,7 +89,7 @@ export async function getAttendanceReportAction(
 export async function getStudentDistributionAction(
   schoolId: string,
 ): Promise<StudentDistributionReport[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   // Assuming classes have grade_level
   const { data, error } = await supabase
     .from("classes")

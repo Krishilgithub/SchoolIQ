@@ -1,6 +1,12 @@
 import { createClient } from "@/lib/supabase/client";
 
-export type EventType = "holiday" | "event" | "deadline" | "meeting" | "other";
+export type EventType =
+  | "holiday"
+  | "event"
+  | "deadline"
+  | "meeting"
+  | "exam"
+  | "other";
 
 export interface SchoolEvent {
   id: string;

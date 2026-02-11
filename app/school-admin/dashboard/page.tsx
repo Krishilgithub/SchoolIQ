@@ -2,16 +2,15 @@ import { OverviewMetrics } from "./_components/overview-metrics";
 import { QuickActions } from "./_components/quick-actions";
 import { RecentActivity } from "./_components/recent-activity";
 import { UpcomingEvents } from "./_components/upcoming-events";
+import { RefreshButton } from "./_components/refresh-button";
 import { getCurrentSchoolId } from "@/lib/services/auth";
 import { redirect } from "next/navigation";
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const schoolId = await getCurrentSchoolId();
 
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   return (
@@ -24,15 +23,7 @@ export default async function DashboardPage() {
             Welcome back! Here's what's happening with your school today.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.location.reload()}
-          className="gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <RefreshButton />
       </div>
 
       {/* Overview Metrics */}

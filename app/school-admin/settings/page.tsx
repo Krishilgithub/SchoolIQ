@@ -16,10 +16,10 @@ import { Separator } from "@/components/ui/separator";
 export default async function SettingsPage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: school } = await supabase
     .from("schools")
     .select("*")

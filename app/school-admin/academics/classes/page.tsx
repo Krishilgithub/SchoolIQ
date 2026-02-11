@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { getCurrentSchoolId } from "@/hooks/use-current-school";
+import { getCurrentSchoolId } from "@/lib/services/auth";
 import { redirect } from "next/navigation";
 import { ClassList } from "./_components/class-list";
 import { CreateClassModal } from "./_components/create-class-modal";
@@ -16,7 +16,7 @@ export default async function ClassesPage() {
   const schoolId = await getCurrentSchoolId();
 
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   return (

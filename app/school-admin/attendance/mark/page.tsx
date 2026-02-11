@@ -15,7 +15,7 @@ import { Users } from "lucide-react";
 export default async function MarkAttendancePage() {
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   // Fetch classes to select which class to mark attendance for

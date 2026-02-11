@@ -192,7 +192,11 @@ export function SchoolsTable({ data }: SchoolsTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-sm text-slate-500">
-                    {new Date(school.created_at).toLocaleDateString()}
+                    {new Date(school.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
