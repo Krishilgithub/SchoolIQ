@@ -32,7 +32,7 @@ export default async function DashboardLayout({
   const isStudent = role === "student";
   const isParent = role === "guardian";
   const isTeacher = role === "teacher";
-  const isAdmin = role === "admin" || role === "school_admin";
+  const isAdmin = role === "school_admin";
 
   // Strict Sidebar Selection
   let SidebarComponent;

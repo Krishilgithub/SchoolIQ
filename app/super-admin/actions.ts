@@ -25,3 +25,24 @@ export async function updateSchoolAction(
     return { success: false, error: error.message };
   }
 }
+
+export async function suspendSchoolAction(schoolId: string) {
+  try {
+    await superAdminService.suspendSchool(schoolId);
+    revalidatePath("/super-admin/schools");
+    revalidatePath(`/super-admin/schools/${schoolId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteSchoolAction(schoolId: string) {
+  try {
+    await superAdminService.deleteSchool(schoolId);
+    revalidatePath("/super-admin/schools");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

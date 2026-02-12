@@ -156,11 +156,13 @@ export function CreateAssignmentForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {classes.map((cls) => (
-                      <SelectItem key={cls.id} value={cls.id}>
-                        {cls.name} (Grade {cls.grade_level})
-                      </SelectItem>
-                    ))}
+                    {classes
+                      .filter((cls) => cls.id && cls.id.trim() !== "")
+                      .map((cls) => (
+                        <SelectItem key={cls.id} value={cls.id}>
+                          {cls.name} (Grade {cls.grade_level})
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -184,11 +186,15 @@ export function CreateAssignmentForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {subjects.map((subject) => (
-                      <SelectItem key={subject.id} value={subject.id}>
-                        {subject.name}
-                      </SelectItem>
-                    ))}
+                    {subjects
+                      .filter(
+                        (subject) => subject.id && subject.id.trim() !== "",
+                      )
+                      .map((subject) => (
+                        <SelectItem key={subject.id} value={subject.id}>
+                          {subject.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />

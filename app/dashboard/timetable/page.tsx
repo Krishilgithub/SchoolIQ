@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TimetableService } from "@/lib/services/timetable";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +47,10 @@ export default function TimetablePage() {
   const loadTimetables = async () => {
     setLoading(true);
     try {
-      const status = filter === "all" ? undefined : filter;
-      const data = await TimetableService.getTimetables({ status });
+      const params = new URLSearchParams();
+      if (filter !== "all") params.append("status", filter);
+      const response = await fetch(`/api/timetable?${params}`);
+      const data = await response.json();
       setTimetables(data);
     } catch (error) {
       console.error("Error loading timetables:", error);
@@ -61,8 +62,10 @@ export default function TimetablePage() {
   const getStatusBadge = (status: string) => {
     const variants = {
       draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-      published: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-      archived: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+      published:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      archived:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
     };
     return variants[status as keyof typeof variants] || variants.draft;
   };
@@ -197,7 +200,9 @@ export default function TimetablePage() {
           ) : timetables.length === 0 ? (
             <Card className="p-12 text-center">
               <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No timetables found</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                No timetables found
+              </h3>
               <p className="text-muted-foreground mb-4">
                 Get started by creating your first timetable
               </p>
@@ -237,7 +242,10 @@ export default function TimetablePage() {
                       {timetable.effective_from && (
                         <div className="flex items-center">
                           <Clock className="mr-2 h-4 w-4" />
-                          From: {new Date(timetable.effective_from).toLocaleDateString()}
+                          From:{" "}
+                          {new Date(
+                            timetable.effective_from,
+                          ).toLocaleDateString()}
                         </div>
                       )}
                     </div>
@@ -249,13 +257,19 @@ export default function TimetablePage() {
                     )}
 
                     <div className="flex items-center space-x-2">
-                      <Link href={`/dashboard/timetable/${timetable.id}`} className="flex-1">
+                      <Link
+                        href={`/dashboard/timetable/${timetable.id}`}
+                        className="flex-1"
+                      >
                         <Button variant="outline" className="w-full" size="sm">
                           <Eye className="mr-2 h-4 w-4" />
                           View
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/timetable/${timetable.id}/edit`} className="flex-1">
+                      <Link
+                        href={`/dashboard/timetable/${timetable.id}/edit`}
+                        className="flex-1"
+                      >
                         <Button variant="outline" className="w-full" size="sm">
                           <Edit className="mr-2 h-4 w-4" />
                           Edit

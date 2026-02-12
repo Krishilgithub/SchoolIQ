@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { SubstitutionService } from "@/lib/services/substitution";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +58,10 @@ export default function SubstitutionsPage() {
   const loadSubstitutions = async () => {
     setLoading(true);
     try {
-      const status = filter === "all" ? undefined : filter;
-      const data = await SubstitutionService.getSubstitutions({ status });
+      const params = new URLSearchParams();
+      if (filter !== "all") params.append("status", filter);
+      const response = await fetch(`/api/substitutions?${params}`);
+      const data = await response.json();
       setSubstitutions(data);
     } catch (error) {
       console.error("Error loading substitutions:", error);
@@ -73,11 +74,15 @@ export default function SubstitutionsPage() {
     e.preventDefault();
 
     try {
-      await SubstitutionService.createSubstitution({
-        ...formData,
-        original_teacher_id: "", // Will be filled by service
-        timetable_entry_id: "", // Will be filled by service
-        status: "pending",
+      await fetch("/api/substitutions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          original_teacher_id: "",
+          timetable_entry_id: "",
+          status: "pending",
+        }),
       });
 
       toast({
@@ -99,8 +104,10 @@ export default function SubstitutionsPage() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-      approved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      pending:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+      approved:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
       rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
     };
     return variants[status as keyof typeof variants] || variants.pending;
@@ -185,7 +192,10 @@ export default function SubstitutionsPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                <Button
+                  type="submit"
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
                   Create Request
                 </Button>
               </div>
@@ -295,7 +305,9 @@ export default function SubstitutionsPage() {
                         <TableCell className="font-medium">
                           {new Date(substitution.date).toLocaleDateString()}
                         </TableCell>
-                        <TableCell>{substitution.original_teacher_id}</TableCell>
+                        <TableCell>
+                          {substitution.original_teacher_id}
+                        </TableCell>
                         <TableCell>
                           {substitution.substitute_teacher_id || (
                             <span className="text-muted-foreground">
@@ -307,7 +319,9 @@ export default function SubstitutionsPage() {
                           {substitution.reason}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusBadge(substitution.status)}>
+                          <Badge
+                            className={getStatusBadge(substitution.status)}
+                          >
                             <span className="mr-1">
                               {getStatusIcon(substitution.status)}
                             </span>

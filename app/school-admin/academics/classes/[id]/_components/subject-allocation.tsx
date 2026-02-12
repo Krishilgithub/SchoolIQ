@@ -142,8 +142,8 @@ export function SubjectAllocation({
                           (s) =>
                             !initialSubjects.some(
                               (cs) => cs.subject_id === s.id,
-                            ),
-                        ) // Filter out already added subjects
+                            ) && s.id, // Filter out already added subjects and empty IDs
+                        )
                         .map((subject) => (
                           <SelectItem key={subject.id} value={subject.id}>
                             {subject.name} ({subject.code})
@@ -161,11 +161,13 @@ export function SubjectAllocation({
                       <SelectValue placeholder="Select Teacher (Optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableTeachers.map((teacher) => (
-                        <SelectItem key={teacher.id} value={teacher.id}>
-                          {teacher.full_name}
-                        </SelectItem>
-                      ))}
+                      {availableTeachers
+                        .filter((teacher) => teacher.id) // Filter out empty IDs
+                        .map((teacher) => (
+                          <SelectItem key={teacher.id} value={teacher.id}>
+                            {teacher.first_name} {teacher.last_name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </TableCell>
@@ -210,9 +212,11 @@ export function SubjectAllocation({
                   </span>
                 </TableCell>
                 <TableCell>
-                  {cs.teacher?.full_name ? (
+                  {cs.teacher?.first_name ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">{cs.teacher.full_name}</span>
+                      <span className="text-sm">
+                        {cs.teacher.first_name} {cs.teacher.last_name}
+                      </span>
                     </div>
                   ) : (
                     <Badge variant="secondary">Unassigned</Badge>

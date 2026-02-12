@@ -55,12 +55,10 @@ export function UpcomingEvents({ schoolId }: UpcomingEventsProps) {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Upcoming Events</CardTitle>
         <Link href="/school-admin/calendar">
-          <Link href="/school-admin/calendar">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              View Calendar
-            </Button>
-          </Link>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            View Calendar
+          </Button>
         </Link>
       </CardHeader>
       <CardContent>

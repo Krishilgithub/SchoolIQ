@@ -244,6 +244,21 @@ export const superAdminService = {
   },
 
   /**
+   * Delete a school and all related data
+   */
+  deleteSchool: async (schoolId: string) => {
+    const supabase = createAdminClient();
+
+    // Delete school (this should cascade delete related records if foreign keys are set up properly)
+    const { error } = await supabase
+      .from("schools")
+      .delete()
+      .eq("id", schoolId);
+
+    if (error) throw new Error(`Failed to delete school: ${error.message}`);
+  },
+
+  /**
    * Update school details
    */
   updateSchool: async (
@@ -619,7 +634,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        user:profiles(full_name, email)
+        user:profiles(first_name, last_name, email)
       `,
       )
       .eq("ticket_id", ticketId)
@@ -666,7 +681,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        created_by:profiles(full_name)
+        created_by:profiles(first_name, last_name)
       `,
       )
       .order("started_at", { ascending: false });
@@ -799,7 +814,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        acknowledged_by:profiles(full_name)
+        acknowledged_by:profiles(first_name, last_name)
       `,
       )
       .order("created_at", { ascending: false });
@@ -896,7 +911,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        created_by:profiles(full_name)
+        created_by:profiles(first_name, last_name)
       `,
       )
       .order("created_at", { ascending: false });
@@ -1009,7 +1024,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        user:profiles(full_name, email)
+        user:profiles(first_name, last_name, email)
       `,
       )
       .gt("expires_at", new Date().toISOString())
@@ -1166,7 +1181,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        changed_by:profiles(full_name, email)
+        changed_by:profiles(first_name, last_name, email)
       `,
       )
       .eq("flag_id", flagId)
@@ -1367,7 +1382,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        created_by:profiles(full_name)
+        created_by:profiles(first_name, last_name)
       `,
       )
       .order("created_at", { ascending: false });
@@ -1458,7 +1473,7 @@ export const superAdminService = {
       .select(
         `
         *,
-        requested_by:profiles(full_name)
+        requested_by:profiles(first_name, last_name)
       `,
       )
       .order("created_at", { ascending: false });

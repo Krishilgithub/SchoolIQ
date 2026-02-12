@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ModerationService } from "@/lib/services/moderation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,25 +21,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  Eye,
-  ArrowLeft,
-} from "lucide-react";
+import { CheckCircle, XCircle, Clock, Eye, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { Database } from "@/types/database.types";
 
-type ModerationRequest = Database["public"]["Tables"]["moderation_requests"]["Row"];
+type ModerationRequest =
+  Database["public"]["Tables"]["moderation_requests"]["Row"];
 
 export default function ModerationQueuePage() {
   const { toast } = useToast();
   const [requests, setRequests] = useState<ModerationRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "pending" | "approved">("pending");
-  const [selectedRequest, setSelectedRequest] = useState<ModerationRequest | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "approved">(
+    "pending",
+  );
+  const [selectedRequest, setSelectedRequest] =
+    useState<ModerationRequest | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [remarks, setRemarks] = useState("");
 
@@ -51,8 +48,10 @@ export default function ModerationQueuePage() {
   const loadRequests = async () => {
     setLoading(true);
     try {
-      const status = filter === "all" ? undefined : filter;
-      const data = await ModerationService.getModerationRequests({ status });
+      const params = new URLSearchParams();
+      if (filter !== "all") params.append("status", filter);
+      const response = await fetch(`/api/moderation?${params}`);
+      const data = await response.json();
       setRequests(data);
     } catch (error) {
       console.error("Error loading moderation requests:", error);
@@ -63,7 +62,11 @@ export default function ModerationQueuePage() {
 
   const handleApprove = async (requestId: string) => {
     try {
-      await ModerationService.approveMarks(requestId, remarks);
+      await fetch("/api/moderation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve", requestId, remarks }),
+      });
       toast({
         title: "Success",
         description: "Marks approved successfully",
@@ -82,7 +85,11 @@ export default function ModerationQueuePage() {
 
   const handleReject = async (requestId: string) => {
     try {
-      await ModerationService.rejectMarks(requestId, remarks);
+      await fetch("/api/moderation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject", requestId, remarks }),
+      });
       toast({
         title: "Success",
         description: "Marks rejected",
@@ -101,8 +108,10 @@ export default function ModerationQueuePage() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-      approved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      pending:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+      approved:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
       rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
     };
     return variants[status as keyof typeof variants] || variants.pending;
@@ -111,7 +120,8 @@ export default function ModerationQueuePage() {
   const getPriorityBadge = (priority: string) => {
     const variants = {
       low: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-      medium: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+      medium:
+        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
       high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
     };
     return variants[priority as keyof typeof variants] || variants.medium;
@@ -244,7 +254,11 @@ export default function ModerationQueuePage() {
                           {new Date(request.submitted_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getPriorityBadge(request.priority || "medium")}>
+                          <Badge
+                            className={getPriorityBadge(
+                              request.priority || "medium",
+                            )}
+                          >
                             {request.priority || "medium"}
                           </Badge>
                         </TableCell>

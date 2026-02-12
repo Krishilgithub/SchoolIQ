@@ -13,6 +13,7 @@ import {
   TrendingUp,
   FileBarChart,
   Settings,
+  User,
 } from "lucide-react";
 import { NavGroup } from "./types";
 
@@ -126,6 +127,11 @@ export const navigationConfig: NavGroup[] = [
   {
     title: "Management",
     items: [
+      {
+        title: "Profile",
+        href: "/school-admin/profile",
+        icon: User,
+      },
       {
         title: "Settings",
         href: "/school-admin/settings",

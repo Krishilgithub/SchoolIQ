@@ -1,14 +1,14 @@
-import { createClient } from '@/lib/supabase/server';
-import { Database } from '@/types/database.types';
+import { createClient } from "@/lib/supabase/server";
+import { Database } from "@/types/database.types";
 
-type ExamMaster = Database['public']['Tables']['exam_master']['Row'];
-type ExamMasterInsert = Database['public']['Tables']['exam_master']['Insert'];
-type ExamMasterUpdate = Database['public']['Tables']['exam_master']['Update'];
-type ExamPaper = Database['public']['Tables']['exam_papers']['Row'];
-type ExamPaperInsert = Database['public']['Tables']['exam_papers']['Insert'];
+type ExamMaster = Database["public"]["Tables"]["exam_master"]["Row"];
+type ExamMasterInsert = Database["public"]["Tables"]["exam_master"]["Insert"];
+type ExamMasterUpdate = Database["public"]["Tables"]["exam_master"]["Update"];
+type ExamPaper = Database["public"]["Tables"]["exam_papers"]["Row"];
+type ExamPaperInsert = Database["public"]["Tables"]["exam_papers"]["Insert"];
 
 export interface ExamWithPapers extends ExamMaster {
- papers?: ExamPaper[];
+  papers?: ExamPaper[];
   exam_type?: any;
   grading_scheme?: any;
 }
@@ -21,21 +21,26 @@ export class ExamService {
   /**
    * Get all exams for a school
    */
-  static async getExams(schoolId: string, academicYearId?: string): Promise<ExamMaster[]> {
+  static async getExams(
+    schoolId: string,
+    academicYearId?: string,
+  ): Promise<ExamMaster[]> {
     const supabase = await createClient();
-    
+
     let query = supabase
-      .from('exam_master')
-      .select(`
+      .from("exam_master")
+      .select(
+        `
         *,
         exam_type:exam_types(*),
         grading_scheme:grading_schemes_new(*)
-      `)
-      .eq('school_id', schoolId)
-      .order('start_date', { ascending: false });
+      `,
+      )
+      .eq("school_id", schoolId)
+      .order("start_date", { ascending: false });
 
     if (academicYearId) {
-      query = query.eq('academic_year_id', academicYearId);
+      query = query.eq("academic_year_id", academicYearId);
     }
 
     const { data, error } = await query;
@@ -49,10 +54,11 @@ export class ExamService {
    */
   static async getExamById(id: string): Promise<ExamWithPapers | null> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('exam_master')
-      .select(`
+      .from("exam_master")
+      .select(
+        `
         *,
         exam_type:exam_types(*),
         grading_scheme:grading_schemes_new(*),
@@ -64,11 +70,12 @@ export class ExamService {
           invigilator:profiles(*),
           room:rooms(*)
         )
-      `)
-      .eq('id', id)
+      `,
+      )
+      .eq("id", id)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error && error.code !== "PGRST116") throw error;
     return data;
   }
 
@@ -77,9 +84,9 @@ export class ExamService {
    */
   static async createExam(exam: ExamMasterInsert): Promise<ExamMaster> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('exam_master')
+      .from("exam_master")
       .insert(exam)
       .select()
       .single();
@@ -91,24 +98,27 @@ export class ExamService {
   /**
    * Update exam (only allowed in draft status)
    */
-  static async updateExam(id: string, updates: ExamMasterUpdate): Promise<ExamMaster> {
+  static async updateExam(
+    id: string,
+    updates: ExamMasterUpdate,
+  ): Promise<ExamMaster> {
     const supabase = await createClient();
 
     // Check if exam is already published
     const { data: current } = await supabase
-      .from('exam_master')
-      .select('status, is_published')
-      .eq('id', id)
+      .from("exam_master")
+      .select("status, is_published")
+      .eq("id", id)
       .single();
 
     if (current?.is_published) {
-      throw new Error('Cannot modify published exam');
+      throw new Error("Cannot modify published exam");
     }
-    
+
     const { data, error } = await supabase
-      .from('exam_master')
+      .from("exam_master")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -121,12 +131,12 @@ export class ExamService {
    */
   static async deleteExam(id: string): Promise<void> {
     const supabase = await createClient();
-    
+
     const { error } = await supabase
-      .from('exam_master')
+      .from("exam_master")
       .delete()
-      .eq('id', id)
-      .eq('status', 'draft');
+      .eq("id", id)
+      .eq("status", "draft");
 
     if (error) throw error;
   }
@@ -136,9 +146,9 @@ export class ExamService {
    */
   static async addPaper(paper: ExamPaperInsert): Promise<ExamPaper> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('exam_papers')
+      .from("exam_papers")
       .insert(paper)
       .select()
       .single();
@@ -150,13 +160,16 @@ export class ExamService {
   /**
    * Update exam paper
    */
-  static async updatePaper(paperId: string, updates: Partial<ExamPaperInsert>): Promise<ExamPaper> {
+  static async updatePaper(
+    paperId: string,
+    updates: Partial<ExamPaperInsert>,
+  ): Promise<ExamPaper> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('exam_papers')
+      .from("exam_papers")
       .update(updates)
-      .eq('id', paperId)
+      .eq("id", paperId)
       .select()
       .single();
 
@@ -169,11 +182,11 @@ export class ExamService {
    */
   static async deletePaper(paperId: string): Promise<void> {
     const supabase = await createClient();
-    
+
     const { error } = await supabase
-      .from('exam_papers')
+      .from("exam_papers")
       .delete()
-      .eq('id', paperId);
+      .eq("id", paperId);
 
     if (error) throw error;
   }
@@ -181,25 +194,31 @@ export class ExamService {
   /**
    * Get exam papers for a class/section
    */
-  static async getPapersForClass(examId: string, classId: string, sectionId?: string): Promise<ExamPaper[]> {
+  static async getPapersForClass(
+    examId: string,
+    classId: string,
+    sectionId?: string,
+  ): Promise<ExamPaper[]> {
     const supabase = await createClient();
-    
+
     let query = supabase
-      .from('exam_papers')
-      .select(`
+      .from("exam_papers")
+      .select(
+        `
         *,
         subject:subjects(*),
         invigilator:profiles(*),
         room:rooms(*)
-      `)
-      .eq('exam_id', examId)
-      .eq('class_id', classId);
+      `,
+      )
+      .eq("exam_id", examId)
+      .eq("class_id", classId);
 
     if (sectionId) {
-      query = query.eq('section_id', sectionId);
+      query = query.eq("section_id", sectionId);
     }
 
-    const { data, error } = await query.order('exam_date').order('start_time');
+    const { data, error } = await query.order("exam_date").order("start_time");
 
     if (error) throw error;
     return data;
@@ -208,28 +227,31 @@ export class ExamService {
   /**
    * Publish exam (make visible to students)
    */
-  static async publishExam(examId: string, publishedBy: string): Promise<ExamMaster> {
+  static async publishExam(
+    examId: string,
+    publishedBy: string,
+  ): Promise<ExamMaster> {
     const supabase = await createClient();
 
     // Validate: must have at least one paper
     const { count } = await supabase
-      .from('exam_papers')
-      .select('id', { count: 'exact', head: true })
-      .eq('exam_id', examId);
+      .from("exam_papers")
+      .select("id", { count: "exact", head: true })
+      .eq("exam_id", examId);
 
     if (!count || count === 0) {
-      throw new Error('Cannot publish exam without papers');
+      throw new Error("Cannot publish exam without papers");
     }
-    
+
     const { data, error } = await supabase
-      .from('exam_master')
+      .from("exam_master")
       .update({
         is_published: true,
         published_at: new Date().toISOString(),
         published_by: publishedBy,
-        status: 'scheduled'
+        status: "scheduled",
       })
-      .eq('id', examId)
+      .eq("id", examId)
       .select()
       .single();
 
@@ -242,26 +264,28 @@ export class ExamService {
    */
   static async getExamTimetable(examId: string) {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('exam_papers')
-      .select(`
+      .from("exam_papers")
+      .select(
+        `
         *,
         class:classes(*),
         section:sections(*),
         subject:subjects(*),
         invigilator:profiles(*),
         room:rooms(*)
-      `)
-      .eq('exam_id', examId)
-      .order('exam_date')
-      .order('start_time');
+      `,
+      )
+      .eq("exam_id", examId)
+      .order("exam_date")
+      .order("start_time");
 
     if (error) throw error;
 
     // Group by date
     const groupedByDate: Record<string, ExamPaper[]> = {};
-    data?.forEach(paper => {
+    data?.forEach((paper) => {
       if (!groupedByDate[paper.exam_date]) {
         groupedByDate[paper.exam_date] = [];
       }
@@ -276,11 +300,13 @@ export class ExamService {
    */
   static async checkSchedulingConflicts(examId: string) {
     const supabase = await createClient();
-    
+
     const { data: papers } = await supabase
-      .from('exam_papers')
-      .select('exam_date, start_time, end_time, room_id, invigilator_id, class_id, section_id')
-      .eq('exam_id', examId);
+      .from("exam_papers")
+      .select(
+        "exam_date, start_time, end_time, room_id, invigilator_id, class_id, section_id",
+      )
+      .eq("exam_id", examId);
 
     if (!papers) return [];
 
@@ -303,24 +329,27 @@ export class ExamService {
             // Room conflict
             if (p1.room_id === p2.room_id) {
               conflicts.push({
-                type: 'room_clash',
-                description: `Room double-booked on ${p1.exam_date} at ${p1.start_time}`
+                type: "room_clash",
+                description: `Room double-booked on ${p1.exam_date} at ${p1.start_time}`,
               });
             }
 
             // Invigilator conflict
             if (p1.invigilator_id === p2.invigilator_id) {
               conflicts.push({
-                type: 'invigilator_clash',
-                description: `Invigilator assigned to multiple papers on ${p1.exam_date} at ${p1.start_time}`
+                type: "invigilator_clash",
+                description: `Invigilator assigned to multiple papers on ${p1.exam_date} at ${p1.start_time}`,
               });
             }
 
             // Student conflict (same class/section)
-            if (p1.class_id === p2.class_id && p1.section_id === p2.section_id) {
+            if (
+              p1.class_id === p2.class_id &&
+              p1.section_id === p2.section_id
+            ) {
               conflicts.push({
-                type: 'student_clash',
-                description: `Students have overlapping papers on ${p1.exam_date}`
+                type: "student_clash",
+                description: `Students have overlapping papers on ${p1.exam_date}`,
               });
             }
           }
@@ -336,15 +365,26 @@ export class ExamService {
    */
   static async getExamStats(examId: string) {
     const supabase = await createClient();
-    
+
     const [papersCount, marksCount, moderationCount] = await Promise.all([
-      supabase.from('exam_papers').select('id', { count: 'exact', head: true }).eq('exam_id', examId),
-      supabase.from('student_marks')
-        .select('id, status', { count: 'exact' })
-        .in('exam_paper_id', supabase.from('exam_papers').select('id').eq('exam_id', examId)),
-      supabase.from('moderation_requests')
-        .select('id, status', { count: 'exact' })
-        .in('exam_paper_id', supabase.from('exam_papers').select('id').eq('exam_id', examId))
+      supabase
+        .from("exam_papers")
+        .select("id", { count: "exact", head: true })
+        .eq("exam_id", examId),
+      supabase
+        .from("student_marks")
+        .select("id, status", { count: "exact" })
+        .in(
+          "exam_paper_id",
+          supabase.from("exam_papers").select("id").eq("exam_id", examId),
+        ),
+      supabase
+        .from("moderation_requests")
+        .select("id, status", { count: "exact" })
+        .in(
+          "exam_paper_id",
+          supabase.from("exam_papers").select("id").eq("exam_id", examId),
+        ),
     ]);
 
     const marksData = marksCount.data || [];
@@ -352,11 +392,16 @@ export class ExamService {
 
     return {
       total_papers: papersCount.count || 0,
-      marks_entered: marksData.filter((m: any) => m.status !== 'draft').length,
-      marks_pending: marksData.filter((m: any) => m.status === 'draft').length,
-      marks_moderated: marksData.filter((m: any) => m.status === 'approved').length,
-      moderation_pending: moderationData.filter((m: any) => m.status === 'pending').length,
-      moderation_approved: moderationData.filter((m: any) => m.status === 'approved').length
+      marks_entered: marksData.filter((m: any) => m.status !== "draft").length,
+      marks_pending: marksData.filter((m: any) => m.status === "draft").length,
+      marks_moderated: marksData.filter((m: any) => m.status === "approved")
+        .length,
+      moderation_pending: moderationData.filter(
+        (m: any) => m.status === "pending",
+      ).length,
+      moderation_approved: moderationData.filter(
+        (m: any) => m.status === "approved",
+      ).length,
     };
   }
 }

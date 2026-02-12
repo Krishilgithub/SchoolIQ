@@ -1,0 +1,24 @@
+﻿
+> schooliq@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 8.2s
+  Running TypeScript ...
+Failed to compile.
+System.Management.Automation.RemoteException
+./app/api/analytics/reports/route.ts:49:9
+Type error: Expected 3-5 arguments, but got 7.
+System.Management.Automation.RemoteException
+[0m [90m 47 |[39m         date_to[33m,[39m
+ [90m 48 |[39m         class_id[33m,[39m
+[31m[1m>[22m[39m[90m 49 |[39m         section_id[33m,[39m
+ [90m    |[39m         [31m[1m^[22m[39m
+ [90m 50 |[39m         student_id[33m,[39m
+ [90m 51 |[39m       )[33m;[39m
+ [90m 52 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null

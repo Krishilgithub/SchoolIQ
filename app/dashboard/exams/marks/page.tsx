@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MarksService } from "@/lib/services/marks";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Save, ArrowLeft, Upload, CheckCircle, AlertTriangle } from "lucide-react";
+import {
+  BookOpen,
+  Save,
+  ArrowLeft,
+  Upload,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { Database } from "@/types/database.types";
@@ -63,8 +69,8 @@ export default function MarksEntryPage() {
       students.map((s) =>
         s.student_id === studentId
           ? { ...s, marks_obtained: parseFloat(marks) || undefined }
-          : s
-      )
+          : s,
+      ),
     );
   };
 
@@ -73,8 +79,8 @@ export default function MarksEntryPage() {
       students.map((s) =>
         s.student_id === studentId
           ? { ...s, is_absent: !s.is_absent, marks_obtained: undefined }
-          : s
-      )
+          : s,
+      ),
     );
   };
 
@@ -90,7 +96,11 @@ export default function MarksEntryPage() {
           is_absent: s.is_absent || false,
         }));
 
-      await MarksService.bulkEnterMarks(marksData);
+      await fetch("/api/marks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "bulk", data: marksData }),
+      });
 
       toast({
         title: "Success",
@@ -111,7 +121,14 @@ export default function MarksEntryPage() {
     setLoading(true);
     try {
       await handleSave();
-      await MarksService.submitForModeration(selectedPaper);
+      await fetch("/api/marks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "submit_moderation",
+          data: { examPaperId: selectedPaper },
+        }),
+      });
 
       toast({
         title: "Success",
@@ -211,8 +228,11 @@ export default function MarksEntryPage() {
                 </h3>
                 <div className="flex items-center space-x-2">
                   <Badge variant="outline">
-                    {students.filter((s) => s.marks_obtained !== undefined).length}/
-                    {students.length} Entered
+                    {
+                      students.filter((s) => s.marks_obtained !== undefined)
+                        .length
+                    }
+                    /{students.length} Entered
                   </Badge>
                   <Badge variant="outline">
                     {students.filter((s) => s.is_absent).length} Absent
@@ -244,7 +264,10 @@ export default function MarksEntryPage() {
                             placeholder="0"
                             value={student.marks_obtained ?? ""}
                             onChange={(e) =>
-                              handleMarkChange(student.student_id, e.target.value)
+                              handleMarkChange(
+                                student.student_id,
+                                e.target.value,
+                              )
                             }
                             disabled={student.is_absent}
                             className="w-24"
@@ -258,7 +281,9 @@ export default function MarksEntryPage() {
                         <input
                           type="checkbox"
                           checked={student.is_absent || false}
-                          onChange={() => handleAbsentToggle(student.student_id)}
+                          onChange={() =>
+                            handleAbsentToggle(student.student_id)
+                          }
                           className="rounded"
                         />
                       </TableCell>

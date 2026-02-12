@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 export interface Teacher {
   id: string;
   email: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   phone_number?: string;
   created_at: Date;
   updated_at: Date;
@@ -31,10 +32,12 @@ export class TeacherService {
         .select("*", { count: "exact" })
         .eq("school_id", schoolId)
         .eq("role", "teacher")
-        .order("full_name", { ascending: true });
+        .order("first_name", { ascending: true });
 
       if (filters.search) {
-        query = query.ilike("full_name", `%${filters.search}%`);
+        query = query.or(
+          `first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%`,
+        );
       }
 
       const { data, count, error } = await query;

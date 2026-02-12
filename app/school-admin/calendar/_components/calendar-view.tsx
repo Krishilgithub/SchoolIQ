@@ -15,7 +15,7 @@ import {
   endOfWeek,
 } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { eventsService, SchoolEvent } from "@/lib/services/events";
 import { useCurrentSchool } from "@/hooks/use-current-school";
 import { Button } from "@/components/ui/button";
@@ -29,10 +29,14 @@ import {
   BookOpen,
   Users,
   Bell,
+  Pencil,
+  Trash2,
+  MoreVertical,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateEventModal } from "./create-event-modal";
+import { EditEventModal } from "./edit-event-modal";
 import {
   Select,
   SelectContent,
@@ -40,16 +44,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function CalendarView() {
   const { schoolId } = useCurrentSchool();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<SchoolEvent | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
 
   const { data: events = [], isLoading } = useQuery({
@@ -113,6 +126,19 @@ export function CalendarView() {
         return <CalendarIcon className="h-3.5 w-3.5" />;
       default:
         return <Bell className="h-3.5 w-3.5" />;
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm("Are you sure you want to delete this event?")) return;
+
+    try {
+      await eventsService.deleteEvent(eventId);
+      toast.success("Event deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["school-events"] });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete event");
     }
   };
 
@@ -295,7 +321,7 @@ export function CalendarView() {
                   {selectedDateEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="p-4 hover:bg-muted/50 transition-colors"
+                      className="p-4 hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex items-start gap-3">
                         <div
@@ -311,12 +337,40 @@ export function CalendarView() {
                             <h4 className="font-semibold leading-tight">
                               {event.title}
                             </h4>
-                            <Badge
-                              variant={getBadgeVariant(event.event_type)}
-                              className="capitalize shrink-0"
-                            >
-                              {event.event_type}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={getBadgeVariant(event.event_type)}
+                                className="capitalize shrink-0"
+                              >
+                                {event.event_type}
+                              </Badge>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => setEditingEvent(event)}
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="text-red-600"
+                                    onClick={() => handleDeleteEvent(event.id)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
 
                           {event.description && (
@@ -381,6 +435,14 @@ export function CalendarView() {
         onOpenChange={setIsCreateModalOpen}
         defaultDate={selectedDate}
       />
+
+      {editingEvent && (
+        <EditEventModal
+          open={!!editingEvent}
+          onOpenChange={(open) => !open && setEditingEvent(null)}
+          event={editingEvent}
+        />
+      )}
     </div>
   );
 }

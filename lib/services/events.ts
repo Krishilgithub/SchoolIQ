@@ -34,69 +34,65 @@ export interface CreateEventData {
 
 export const eventsService = {
   async getEvents(schoolId: string, startDate?: Date, endDate?: Date) {
-    const supabase = createClient();
-
-    let query = supabase
-      .from("school_events")
-      .select("*")
-      .eq("school_id", schoolId)
-      .order("start_date", { ascending: true });
-
+    const params = new URLSearchParams();
+    
     if (startDate) {
-      query = query.gte("start_date", startDate.toISOString());
+      params.append("start_date", startDate.toISOString());
     }
-
+    
     if (endDate) {
-      query = query.lte("start_date", endDate.toISOString());
+      params.append("end_date", endDate.toISOString());
     }
 
-    const { data, error } = await query;
+    const url = `/api/school-admin/events${params.toString() ? `?${params.toString()}` : ""}`;
+    const response = await fetch(url);
 
-    if (error) {
+    if (!response.ok) {
+      const error = await response.json();
       console.error("Error fetching events:", error);
-      throw error;
+      throw new Error(error.error || "Failed to fetch events");
     }
 
-    return data as SchoolEvent[];
+    return response.json() as Promise<SchoolEvent[]>;
   },
 
   async createEvent(schoolId: string, eventData: CreateEventData) {
-    const supabase = createClient();
-
-    const { data, error } = await supabase
-      .from("school_events")
-      .insert({
-        school_id: schoolId,
+    const response = await fetch("/api/school-admin/events", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         title: eventData.title,
         description: eventData.description,
         start_date: eventData.start_date.toISOString(),
         end_date: eventData.end_date?.toISOString(),
         event_type: eventData.event_type,
         location: eventData.location,
-        is_all_day: eventData.is_all_day,
-      })
-      .select()
-      .single();
+        is_all_day: eventData.is_all_day ?? false,
+      }),
+    });
 
-    if (error) {
+    if (!response.ok) {
+      const error = await response.json();
       console.error("Error creating event:", error);
-      throw error;
+      throw new Error(error.error || "Failed to create event");
     }
 
-    return data as SchoolEvent;
+    return response.json() as Promise<SchoolEvent>;
   },
 
   async deleteEvent(id: string) {
-    const supabase = createClient();
+    const response = await fetch(`/api/school-admin/events/${id}`, {
+      method: "DELETE",
+    });
 
-    const { error } = await supabase
-      .from("school_events")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
+    if (!response.ok) {
+      const error = await response.json();
       console.error("Error deleting event:", error);
-      throw error;
+      throw new Error(error.error || "Failed to delete event");
     }
+
+    return response.json();
   },
 };

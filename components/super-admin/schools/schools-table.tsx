@@ -16,6 +16,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -31,7 +41,11 @@ import Link from "next/link";
 import { toast } from "sonner";
 import React from "react";
 
-import { impersonateUserAction } from "@/app/super-admin/actions";
+import {
+  impersonateUserAction,
+  suspendSchoolAction,
+  deleteSchoolAction,
+} from "@/app/super-admin/actions";
 import { useRouter } from "next/navigation";
 
 // Using the same type as dashboard for now, but could be specific
@@ -54,6 +68,10 @@ import { Search } from "lucide-react";
 
 export function SchoolsTable({ data }: SchoolsTableProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [suspendDialogOpen, setSuspendDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedSchool, setSelectedSchool] =
+    React.useState<SchoolTableItem | null>(null);
   const router = useRouter();
 
   const handleImpersonate = async (school: SchoolTableItem) => {
@@ -78,6 +96,46 @@ export function SchoolsTable({ data }: SchoolsTableProps) {
         loading: "Generating impersonation session...",
         success: (msg) => msg,
         error: (err) => `Failed to impersonate: ${err.message}`,
+      },
+    );
+  };
+
+  const handleSuspend = async () => {
+    if (!selectedSchool) return;
+
+    toast.promise(
+      async () => {
+        const result = await suspendSchoolAction(selectedSchool.id);
+        if (!result.success) throw new Error(result.error);
+        setSuspendDialogOpen(false);
+        setSelectedSchool(null);
+        router.refresh();
+        return "School suspended successfully";
+      },
+      {
+        loading: "Suspending school...",
+        success: (msg) => msg,
+        error: (err) => `Failed to suspend school: ${err}`,
+      },
+    );
+  };
+
+  const handleDelete = async () => {
+    if (!selectedSchool) return;
+
+    toast.promise(
+      async () => {
+        const result = await deleteSchoolAction(selectedSchool.id);
+        if (!result.success) throw new Error(result.error);
+        setDeleteDialogOpen(false);
+        setSelectedSchool(null);
+        router.refresh();
+        return "School deleted successfully";
+      },
+      {
+        loading: "Deleting school...",
+        success: (msg) => msg,
+        error: (err) => `Failed to delete school: ${err}`,
       },
     );
   };
@@ -227,10 +285,22 @@ export function SchoolsTable({ data }: SchoolsTableProps) {
                           <VenetianMask className="mr-2 h-4 w-4" /> Impersonate
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-amber-600 focus:text-amber-700 focus:bg-amber-50 cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedSchool(school);
+                            setSuspendDialogOpen(true);
+                          }}
+                          className="text-amber-600 focus:text-amber-700 focus:bg-amber-50 cursor-pointer"
+                        >
                           <ShieldAlert className="mr-2 h-4 w-4" /> Suspend
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedSchool(school);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                        >
                           <Trash2 className="mr-2 h-4 w-4" /> Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -242,6 +312,58 @@ export function SchoolsTable({ data }: SchoolsTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Suspend Confirmation Dialog */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspend School</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to suspend{" "}
+              <strong>{selectedSchool?.name}</strong>? This will set the
+              subscription status to canceled and may affect all users
+              associated with this school.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedSchool(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspend}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              Suspend School
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete School</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete{" "}
+              <strong>{selectedSchool?.name}</strong>? This action cannot be
+              undone and will remove all data associated with this school
+              including users, students, and records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedSchool(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

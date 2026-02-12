@@ -157,16 +157,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
 
-      // Sign out from Supabase
-      await supabase.auth.signOut();
+      // Call server-side signout to clear server cookies
+      try {
+        await fetch('/api/auth/signout', { method: 'POST' });
+      } catch (error) {
+        console.error('Server signout failed:', error);
+      }
 
-      // Force redirect to login
-      router.push("/auth/login");
-      router.refresh();
+      // Sign out from Supabase with scope 'global' to clear all sessions
+      await supabase.auth.signOut({ scope: 'global' });
+
+      // Clear all local storage
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+
+      // Force redirect to login with cache clear
+      window.location.href = "/auth/login";
     } catch (error) {
       console.error("Error signing out:", error);
       // Still redirect even if there's an error
-      router.push("/auth/login");
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/auth/login";
+      }
     }
   };
 

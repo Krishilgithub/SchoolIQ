@@ -185,7 +185,9 @@ export function ClassList({ schoolId }: ClassListProps) {
                   </TableCell>
                   <TableCell>
                     {/* @ts-ignore - joined data */}
-                    {cls.class_teacher?.full_name || "Unassigned"}
+                    {cls.class_teacher
+                      ? `${cls.class_teacher.first_name} ${cls.class_teacher.last_name}`
+                      : "Unassigned"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ResultService } from "@/lib/services/result";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -48,7 +47,14 @@ export default function CalculateResultsPage() {
       }, 300);
 
       // Calculate results
-      await ResultService.calculateExamResults(selectedExam);
+      await fetch("/api/results", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "calculate_exam",
+          examId: selectedExam,
+        }),
+      });
 
       clearInterval(progressInterval);
       setProgress(100);
@@ -193,11 +199,7 @@ export default function CalculateResultsPage() {
             {/* Actions */}
             <div className="flex items-center justify-end space-x-3 pt-6 border-t">
               <Link href="/dashboard/results">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={calculating}
-                >
+                <Button type="button" variant="outline" disabled={calculating}>
                   Cancel
                 </Button>
               </Link>
@@ -230,7 +232,9 @@ export default function CalculateResultsPage() {
             <li>• Total marks, percentages, and grades are calculated</li>
             <li>• Class, section, and school rankings are generated</li>
             <li>• Performance analytics and trends are computed</li>
-            <li>• Results are saved as draft (unless auto-publish is enabled)</li>
+            <li>
+              • Results are saved as draft (unless auto-publish is enabled)
+            </li>
           </ul>
         </Card>
       </motion.div>

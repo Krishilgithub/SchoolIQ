@@ -27,7 +27,7 @@ export default async function TeacherProfilePage({
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) redirect("/auth/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: teacher, error } = await supabase
     .from("profiles")
     .select("*")

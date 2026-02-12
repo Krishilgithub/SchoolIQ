@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ExamService } from "@/lib/services/exam";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +47,10 @@ export default function ExamsPage() {
   const loadExams = async () => {
     setLoading(true);
     try {
-      const status = filter === "all" ? undefined : filter;
-      const data = await ExamService.getExams({ status });
+      const params = new URLSearchParams();
+      if (filter !== "all") params.append("status", filter);
+      const response = await fetch(`/api/exams?${params}`);
+      const data = await response.json();
       setExams(data);
     } catch (error) {
       console.error("Error loading exams:", error);
@@ -61,9 +62,11 @@ export default function ExamsPage() {
   const getStatusBadge = (status: string) => {
     const variants = {
       draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-      published: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      published:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
       ongoing: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-      completed: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+      completed:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
     };
     return variants[status as keyof typeof variants] || variants.draft;
   };
@@ -234,8 +237,11 @@ export default function ExamsPage() {
                       {exam.start_date && (
                         <div className="flex items-center">
                           <Clock className="mr-2 h-4 w-4" />
-                          {new Date(exam.start_date).toLocaleDateString()} -{" "}
-                          {exam.end_date && new Date(exam.end_date).toLocaleDateString()}
+                          {new Date(
+                            exam.start_date,
+                          ).toLocaleDateString()} -{" "}
+                          {exam.end_date &&
+                            new Date(exam.end_date).toLocaleDateString()}
                         </div>
                       )}
                       <div className="flex items-center">
@@ -251,13 +257,19 @@ export default function ExamsPage() {
                     )}
 
                     <div className="flex items-center space-x-2">
-                      <Link href={`/dashboard/exams/${exam.id}`} className="flex-1">
+                      <Link
+                        href={`/dashboard/exams/${exam.id}`}
+                        className="flex-1"
+                      >
                         <Button variant="outline" className="w-full" size="sm">
                           <Eye className="mr-2 h-4 w-4" />
                           View
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/exams/${exam.id}/edit`} className="flex-1">
+                      <Link
+                        href={`/dashboard/exams/${exam.id}/edit`}
+                        className="flex-1"
+                      >
                         <Button variant="outline" className="w-full" size="sm">
                           <Edit className="mr-2 h-4 w-4" />
                           Edit

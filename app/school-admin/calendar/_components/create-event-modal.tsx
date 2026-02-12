@@ -59,7 +59,7 @@ export function CreateEventModal({
   onOpenChange,
   defaultDate,
 }: CreateEventModalProps) {
-  const { schoolId } = useCurrentSchool();
+  const { schoolId, loading: schoolLoading, error: schoolError } = useCurrentSchool();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -67,6 +67,18 @@ export function CreateEventModal({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Debug logging
+  useEffect(() => {
+    if (open) {
+      console.log("Create Event Modal opened:", {
+        schoolId,
+        schoolLoading,
+        schoolError,
+        mounted
+      });
+    }
+  }, [open, schoolId, schoolLoading, schoolError, mounted]);
 
   // @ts-ignore - zodResolver type incompatibility with boolean fields
   const form = useForm<CreateEventValues>({
@@ -83,18 +95,39 @@ export function CreateEventModal({
   });
 
   async function onSubmit(data: CreateEventValues) {
-    if (!schoolId) return;
+    if (!schoolId) {
+      toast.error("School not found. Please refresh and try again.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
+      console.log("Creating event with data:", data);
+      console.log("School ID:", schoolId);
+      
       await eventsService.createEvent(schoolId, data);
       toast.success("Event created successfully");
       queryClient.invalidateQueries({ queryKey: ["school-events"] });
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to create event");
+      console.error("Error creating event:", error);
+      
+      let errorMessage = "Failed to create event";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      // Provide specific feedback for common issues
+      if (errorMessage.includes("Unauthorized") || errorMessage.includes("403")) {
+        errorMessage = "You don't have permission to create events. Please contact your administrator.";
+      } else if (errorMessage.includes("School not found")) {
+        errorMessage = "School information not found. Please refresh and try again.";
+      } else if (errorMessage.includes("validation")) {
+        errorMessage = "Please check all required fields are filled correctly.";
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -102,6 +135,57 @@ export function CreateEventModal({
 
   if (!mounted) {
     return null;
+  }
+
+  // Show loading state if school info is being fetched
+  if (schoolLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-125">
+          <DialogHeader>
+            <DialogTitle>Add New Event</DialogTitle>
+            <DialogDescription>
+              Loading school information...
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show error state if there's an issue with school info
+  if (schoolError || !schoolId) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-125">
+          <DialogHeader>
+            <DialogTitle>Add New Event</DialogTitle>
+            <DialogDescription>
+              Unable to create event
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-red-600">
+              {schoolError
+                ? `Error loading school information: ${schoolError.message}`
+                : "School information not found. Please make sure you're logged in as a school administrator."}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
@@ -190,16 +274,21 @@ export function CreateEventModal({
                           <Button
                             variant={"outline"}
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 text-left font-normal h-11",
                               !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              <span className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                {format(field.value, "PPP")}
+                              </span>
                             ) : (
-                              <span>Pick a date</span>
+                              <span className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                Pick a date
+                              </span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -208,8 +297,12 @@ export function CreateEventModal({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date("1900-01-01")}
+                          disabled={(date) =>
+                            date <
+                            new Date(new Date().setHours(0, 0, 0, 0) - 86400000)
+                          }
                           initialFocus
+                          className="rounded-md border"
                         />
                       </PopoverContent>
                     </Popover>
@@ -230,16 +323,21 @@ export function CreateEventModal({
                           <Button
                             variant={"outline"}
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 text-left font-normal h-11",
                               !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              <span className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                {format(field.value, "PPP")}
+                              </span>
                             ) : (
-                              <span>Pick a date</span>
+                              <span className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                Pick a date
+                              </span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -248,8 +346,17 @@ export function CreateEventModal({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date("1900-01-01")}
+                          disabled={(date) => {
+                            const startDate = form.watch("start_date");
+                            return startDate
+                              ? date < startDate
+                              : date <
+                                  new Date(
+                                    new Date().setHours(0, 0, 0, 0) - 86400000,
+                                  );
+                          }}
                           initialFocus
+                          className="rounded-md border"
                         />
                       </PopoverContent>
                     </Popover>

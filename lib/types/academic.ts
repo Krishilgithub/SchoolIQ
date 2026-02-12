@@ -62,7 +62,8 @@ export interface Teacher {
   created_at: Date;
   updated_at: Date;
   // Relations
-  full_name?: string; // Often joined
+  first_name?: string; // Often joined from profiles
+  last_name?: string; // Often joined from profiles
   email?: string; // Often joined
 }
 

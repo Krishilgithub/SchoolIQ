@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ReportCardService } from "@/lib/services/report-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,14 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  FileText,
-  Download,
-  Plus,
-  Eye,
-  ArrowLeft,
-  Users,
-} from "lucide-react";
+import { FileText, Download, Plus, Eye, ArrowLeft, Users } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { Database } from "@/types/database.types";
@@ -84,11 +76,16 @@ export default function ReportCardsPage() {
 
     setGenerating(true);
     try {
-      await ReportCardService.bulkGenerateReportCards(
-        formData.exam_id,
-        formData.template_id,
-        formData.class_id || undefined
-      );
+      await fetch("/api/report-cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "bulk_generate",
+          examId: formData.exam_id,
+          templateId: formData.template_id,
+          classId: formData.class_id || undefined,
+        }),
+      });
 
       toast({
         title: "Success",
@@ -110,7 +107,11 @@ export default function ReportCardsPage() {
 
   const handleDownload = async (reportCardId: string) => {
     try {
-      await ReportCardService.trackDownload(reportCardId);
+      await fetch("/api/report-cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "track_download", reportCardId }),
+      });
       toast({
         title: "Download Started",
         description: "Your report card is being downloaded",
@@ -192,9 +193,15 @@ export default function ReportCardsPage() {
                       <SelectValue placeholder="Choose template" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="template1">Standard Template</SelectItem>
-                      <SelectItem value="template2">Detailed Template</SelectItem>
-                      <SelectItem value="template3">Simplified Template</SelectItem>
+                      <SelectItem value="template1">
+                        Standard Template
+                      </SelectItem>
+                      <SelectItem value="template2">
+                        Detailed Template
+                      </SelectItem>
+                      <SelectItem value="template3">
+                        Simplified Template
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

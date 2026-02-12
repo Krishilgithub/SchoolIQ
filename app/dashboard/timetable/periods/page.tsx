@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { PeriodService } from "@/lib/services/period";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +58,12 @@ export default function PeriodsPage() {
   const loadPeriods = async () => {
     setLoading(true);
     try {
-      const data = await PeriodService.getDaySchedule("", selectedDay);
+      const params = new URLSearchParams({
+        academicYearId: "",
+        dayOfWeek: selectedDay,
+      });
+      const response = await fetch(`/api/periods?${params}`);
+      const data = await response.json();
       setPeriods(data);
     } catch (error) {
       console.error("Error loading periods:", error);
@@ -72,10 +76,14 @@ export default function PeriodsPage() {
     e.preventDefault();
 
     try {
-      await PeriodService.createPeriod({
-        ...formData,
-        academic_year_id: "", // Will be filled by service
-        day_of_week: selectedDay,
+      await fetch("/api/periods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          academic_year_id: "",
+          day_of_week: selectedDay,
+        }),
       });
 
       toast({
@@ -103,9 +111,12 @@ export default function PeriodsPage() {
   const getPeriodTypeBadge = (type: string) => {
     const variants = {
       class: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-      break: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-      lunch: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-      assembly: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+      break:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      lunch:
+        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+      assembly:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
     };
     return variants[type as keyof typeof variants] || variants.class;
   };
@@ -210,7 +221,10 @@ export default function PeriodsPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                <Button
+                  type="submit"
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
                   Create Period
                 </Button>
               </div>

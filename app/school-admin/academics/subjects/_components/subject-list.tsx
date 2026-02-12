@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { EditSubjectModal } from "./edit-subject-modal";
 
 interface SubjectListProps {
   schoolId: string;
@@ -37,6 +38,7 @@ export function SubjectList({ schoolId }: SubjectListProps) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const { toast } = useToast();
 
   const fetchSubjects = async () => {
@@ -174,7 +176,9 @@ export function SubjectList({ schoolId }: SubjectListProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => {}}>
+                        <DropdownMenuItem
+                          onClick={() => setEditingSubject(subject)}
+                        >
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
@@ -194,6 +198,15 @@ export function SubjectList({ schoolId }: SubjectListProps) {
           </TableBody>
         </Table>
       </div>
+
+      {editingSubject && (
+        <EditSubjectModal
+          subject={editingSubject}
+          open={!!editingSubject}
+          onOpenChange={(open) => !open && setEditingSubject(null)}
+          onSuccess={fetchSubjects}
+        />
+      )}
     </div>
   );
 }

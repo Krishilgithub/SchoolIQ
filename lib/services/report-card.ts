@@ -1,11 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
-import { Database } from '@/types/database.types';
+import { createClient } from "@/lib/supabase/server";
+import { Database } from "@/types/database.types";
 
-type ReportTemplate = Database['public']['Tables']['report_templates']['Row'];
-type ReportTemplateInsert = Database['public']['Tables']['report_templates']['Insert'];
-type ReportTemplateUpdate = Database['public']['Tables']['report_templates']['Update'];
-type ReportCard = Database['public']['Tables']['report_cards']['Row'];
-type ReportCardInsert = Database['public']['Tables']['report_cards']['Insert'];
+type ReportTemplate = Database["public"]["Tables"]["report_templates"]["Row"];
+type ReportTemplateInsert =
+  Database["public"]["Tables"]["report_templates"]["Insert"];
+type ReportTemplateUpdate =
+  Database["public"]["Tables"]["report_templates"]["Update"];
+type ReportCard = Database["public"]["Tables"]["report_cards"]["Row"];
+type ReportCardInsert = Database["public"]["Tables"]["report_cards"]["Insert"];
 
 export interface ReportCardWithDetails extends ReportCard {
   student_result?: any;
@@ -20,19 +22,22 @@ export class ReportCardService {
   /**
    * Get all templates for a school
    */
-  static async getTemplates(schoolId: string, activeOnly = true): Promise<ReportTemplate[]> {
+  static async getTemplates(
+    schoolId: string,
+    activeOnly = true,
+  ): Promise<ReportTemplate[]> {
     const supabase = await createClient();
-    
+
     let query = supabase
-      .from('report_templates')
-      .select('*')
-      .eq('school_id', schoolId);
+      .from("report_templates")
+      .select("*")
+      .eq("school_id", schoolId);
 
     if (activeOnly) {
-      query = query.eq('is_active', true);
+      query = query.eq("is_active", true);
     }
 
-    const { data, error } = await query.order('name');
+    const { data, error } = await query.order("name");
 
     if (error) throw error;
     return data || [];
@@ -43,51 +48,55 @@ export class ReportCardService {
    */
   static async getTemplateById(id: string): Promise<ReportTemplate | null> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('report_templates')
-      .select('*')
-      .eq('id', id)
+      .from("report_templates")
+      .select("*")
+      .eq("id", id)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error && error.code !== "PGRST116") throw error;
     return data;
   }
 
   /**
    * Get default template for a school
    */
-  static async getDefaultTemplate(schoolId: string): Promise<ReportTemplate | null> {
+  static async getDefaultTemplate(
+    schoolId: string,
+  ): Promise<ReportTemplate | null> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('report_templates')
-      .select('*')
-      .eq('school_id', schoolId)
-      .eq('is_default', true)
-      .eq('is_active', true)
+      .from("report_templates")
+      .select("*")
+      .eq("school_id", schoolId)
+      .eq("is_default", true)
+      .eq("is_active", true)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error && error.code !== "PGRST116") throw error;
     return data;
   }
 
   /**
    * Create template
    */
-  static async createTemplate(template: ReportTemplateInsert): Promise<ReportTemplate> {
+  static async createTemplate(
+    template: ReportTemplateInsert,
+  ): Promise<ReportTemplate> {
     const supabase = await createClient();
 
     // If setting as default, unset other defaults
     if (template.is_default) {
       await supabase
-        .from('report_templates')
+        .from("report_templates")
         .update({ is_default: false })
-        .eq('school_id', template.school_id);
+        .eq("school_id", template.school_id);
     }
-    
+
     const { data, error } = await supabase
-      .from('report_templates')
+      .from("report_templates")
       .insert(template)
       .select()
       .single();
@@ -99,30 +108,33 @@ export class ReportCardService {
   /**
    * Update template
    */
-  static async updateTemplate(id: string, updates: ReportTemplateUpdate): Promise<ReportTemplate> {
+  static async updateTemplate(
+    id: string,
+    updates: ReportTemplateUpdate,
+  ): Promise<ReportTemplate> {
     const supabase = await createClient();
 
     // If setting as default, unset other defaults in same school
     if (updates.is_default) {
       const { data: current } = await supabase
-        .from('report_templates')
-        .select('school_id')
-        .eq('id', id)
+        .from("report_templates")
+        .select("school_id")
+        .eq("id", id)
         .single();
 
       if (current) {
         await supabase
-          .from('report_templates')
+          .from("report_templates")
           .update({ is_default: false })
-          .eq('school_id', current.school_id)
-          .neq('id', id);
+          .eq("school_id", current.school_id)
+          .neq("id", id);
       }
     }
-    
+
     const { data, error } = await supabase
-      .from('report_templates')
+      .from("report_templates")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -135,11 +147,11 @@ export class ReportCardService {
    */
   static async deleteTemplate(id: string): Promise<void> {
     const supabase = await createClient();
-    
+
     const { error } = await supabase
-      .from('report_templates')
+      .from("report_templates")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
   }
@@ -150,14 +162,15 @@ export class ReportCardService {
   static async generateReportCard(
     studentResultId: string,
     templateId?: string,
-    generatedBy?: string
+    generatedBy?: string,
   ): Promise<ReportCard> {
     const supabase = await createClient();
 
     // Get student result with full details
     const { data: result } = await supabase
-      .from('student_results')
-      .select(`
+      .from("student_results")
+      .select(
+        `
         *,
         student:students(*),
         exam:exam_master(*),
@@ -168,11 +181,12 @@ export class ReportCardService {
           subject:subjects(*)
         ),
         rankings:student_rankings(*)
-      `)
-      .eq('id', studentResultId)
+      `,
+      )
+      .eq("id", studentResultId)
       .single();
 
-    if (!result) throw new Error('Result not found');
+    if (!result) throw new Error("Result not found");
 
     // Get template
     let template = null;
@@ -182,26 +196,26 @@ export class ReportCardService {
       template = await this.getDefaultTemplate(result.student.school_id);
     }
 
-    if (!template) throw new Error('No template available');
+    if (!template) throw new Error("No template available");
 
     // Generate PDF URL (placeholder - actual PDF generation would be implemented separately)
     const pdfUrl = await this.generatePDF(result, template);
 
     // Create report card record
     const { data: reportCard, error } = await supabase
-      .from('report_cards')
+      .from("report_cards")
       .insert({
         student_result_id: studentResultId,
         template_id: template.id,
         pdf_url: pdfUrl,
         generated_by: generatedBy || null,
         generated_at: new Date().toISOString(),
-        status: 'generated',
+        status: "generated",
         metadata: {
           student_name: `${result.student.first_name} ${result.student.last_name}`,
           exam_name: result.exam.name,
-          class_name: result.class.name
-        }
+          class_name: result.class.name,
+        },
       })
       .select()
       .single();
@@ -213,7 +227,10 @@ export class ReportCardService {
   /**
    * PDF generation placeholder
    */
-  private static async generatePDF(result: any, template: ReportTemplate): Promise<string> {
+  private static async generatePDF(
+    result: any,
+    template: ReportTemplate,
+  ): Promise<string> {
     // This would integrate with a PDF generation library like:
     // - puppeteer
     // - react-pdf
@@ -230,20 +247,20 @@ export class ReportCardService {
     classId: string,
     sectionId?: string,
     templateId?: string,
-    generatedBy?: string
+    generatedBy?: string,
   ): Promise<ReportCard[]> {
     const supabase = await createClient();
 
     // Get all results
     let query = supabase
-      .from('student_results')
-      .select('id')
-      .eq('exam_id', examId)
-      .eq('class_id', classId)
-      .eq('status', 'published');
+      .from("student_results")
+      .select("id")
+      .eq("exam_id", examId)
+      .eq("class_id", classId)
+      .eq("status", "published");
 
     if (sectionId) {
-      query = query.eq('section_id', sectionId);
+      query = query.eq("section_id", sectionId);
     }
 
     const { data: results } = await query;
@@ -252,7 +269,9 @@ export class ReportCardService {
 
     // Generate report cards
     const reportCards = await Promise.all(
-      results.map(r => this.generateReportCard(r.id, templateId, generatedBy))
+      results.map((r) =>
+        this.generateReportCard(r.id, templateId, generatedBy),
+      ),
     );
 
     return reportCards;
@@ -261,12 +280,15 @@ export class ReportCardService {
   /**
    * Get report card for a result
    */
-  static async getReportCard(studentResultId: string): Promise<ReportCardWithDetails | null> {
+  static async getReportCard(
+    studentResultId: string,
+  ): Promise<ReportCardWithDetails | null> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('report_cards')
-      .select(`
+      .from("report_cards")
+      .select(
+        `
         *,
         student_result:student_results(
           *,
@@ -274,13 +296,14 @@ export class ReportCardService {
           exam:exam_master(*)
         ),
         template:report_templates(*)
-      `)
-      .eq('student_result_id', studentResultId)
-      .order('generated_at', { ascending: false })
+      `,
+      )
+      .eq("student_result_id", studentResultId)
+      .order("generated_at", { ascending: false })
       .limit(1)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error && error.code !== "PGRST116") throw error;
     return data;
   }
 
@@ -289,15 +312,15 @@ export class ReportCardService {
    */
   static async markAsSent(reportCardId: string): Promise<ReportCard> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
-      .from('report_cards')
+      .from("report_cards")
       .update({
         is_sent_to_parent: true,
         sent_at: new Date().toISOString(),
-        status: 'sent'
+        status: "sent",
       })
-      .eq('id', reportCardId)
+      .eq("id", reportCardId)
       .select()
       .single();
 
@@ -310,21 +333,21 @@ export class ReportCardService {
    */
   static async trackDownload(reportCardId: string): Promise<void> {
     const supabase = await createClient();
-    
+
     const { data: current } = await supabase
-      .from('report_cards')
-      .select('download_count')
-      .eq('id', reportCardId)
+      .from("report_cards")
+      .select("download_count")
+      .eq("id", reportCardId)
       .single();
 
     await supabase
-      .from('report_cards')
+      .from("report_cards")
       .update({
         download_count: (current?.download_count || 0) + 1,
         last_downloaded_at: new Date().toISOString(),
-        status: 'downloaded'
+        status: "downloaded",
       })
-      .eq('id', reportCardId);
+      .eq("id", reportCardId);
   }
 
   /**
@@ -333,28 +356,32 @@ export class ReportCardService {
   static async getClassReportCards(
     examId: string,
     classId: string,
-    sectionId?: string
+    sectionId?: string,
   ): Promise<ReportCardWithDetails[]> {
     const supabase = await createClient();
-    
+
     let query = supabase
-      .from('report_cards')
-      .select(`
+      .from("report_cards")
+      .select(
+        `
         *,
         student_result:student_results!inner(
           *,
           student:students(*)
         ),
         template:report_templates(*)
-      `)
-      .eq('student_result.exam_id', examId)
-      .eq('student_result.class_id', classId);
+      `,
+      )
+      .eq("student_result.exam_id", examId)
+      .eq("student_result.class_id", classId);
 
     if (sectionId) {
-      query = query.eq('student_result.section_id', sectionId);
+      query = query.eq("student_result.section_id", sectionId);
     }
 
-    const { data, error } = await query.order('generated_at', { ascending: false });
+    const { data, error } = await query.order("generated_at", {
+      ascending: false,
+    });
 
     if (error) throw error;
     return data || [];
@@ -365,18 +392,20 @@ export class ReportCardService {
    */
   static async getReportCardStats(examId: string, classId?: string) {
     const supabase = await createClient();
-    
+
     let query = supabase
-      .from('report_cards')
-      .select(`
+      .from("report_cards")
+      .select(
+        `
         status,
         is_sent_to_parent,
         student_result:student_results!inner(exam_id, class_id)
-      `)
-      .eq('student_result.exam_id', examId);
+      `,
+      )
+      .eq("student_result.exam_id", examId);
 
     if (classId) {
-      query = query.eq('student_result.class_id', classId);
+      query = query.eq("student_result.class_id", classId);
     }
 
     const { data, error } = await query;
@@ -385,9 +414,9 @@ export class ReportCardService {
 
     return {
       total: data?.length || 0,
-      generated: data?.filter(r => r.status === 'generated').length || 0,
-      sent: data?.filter(r => r.is_sent_to_parent).length || 0,
-      downloaded: data?.filter(r => r.status === 'downloaded').length || 0
+      generated: data?.filter((r) => r.status === "generated").length || 0,
+      sent: data?.filter((r) => r.is_sent_to_parent).length || 0,
+      downloaded: data?.filter((r) => r.status === "downloaded").length || 0,
     };
   }
 }

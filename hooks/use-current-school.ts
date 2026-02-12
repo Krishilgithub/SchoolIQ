@@ -21,23 +21,18 @@ export function useCurrentSchool() {
           return;
         }
 
-        // First try school_admins
-        let { data: adminData, error: adminError } = await supabase
-          .from("school_admins")
-          .select("school_id")
-          .eq("user_id", user.id)
+        // Get user profile which contains the school_id
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("school_id, role")
+          .eq("id", user.id)
           .single();
 
-        if (adminData) {
-          setSchoolId(adminData.school_id);
-        } else {
-          // If not admin, check teachers (if table exists and RLS allows)
-          // or other roles. for now we assume admin.
-          // If we add teachers later, we can extend this.
-          // For now just error if not found.
-          if (adminError) {
-            console.error("Error fetching school admin:", adminError);
-          }
+        if (profileError) {
+          console.error("Error fetching user profile:", profileError);
+          setError(profileError);
+        } else if (profile?.school_id) {
+          setSchoolId(profile.school_id);
         }
       } catch (err) {
         setError(err as Error);

@@ -118,11 +118,15 @@ export function ExportDataDialog({ onExport }: ExportDataDialogProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {exportTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
+                      {exportTypes
+                        .filter(
+                          (type) => type.value && type.value.trim() !== "",
+                        )
+                        .map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormDescription>

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ExamService } from "@/lib/services/exam";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,11 +39,16 @@ export default function CreateExamPage() {
     setLoading(true);
 
     try {
-      const exam = await ExamService.createExam({
-        ...formData,
-        school_id: "", // Will be filled by the service
-        status: "draft",
+      const response = await fetch("/api/exams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          school_id: "",
+          status: "draft",
+        }),
       });
+      const exam = await response.json();
 
       toast({
         title: "Success",
@@ -202,9 +206,7 @@ export default function CreateExamPage() {
 
               {formData.is_weighted && (
                 <div className="space-y-2">
-                  <Label htmlFor="weightage">
-                    Weightage (%) *
-                  </Label>
+                  <Label htmlFor="weightage">Weightage (%) *</Label>
                   <Input
                     id="weightage"
                     type="number"

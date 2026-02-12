@@ -28,7 +28,7 @@ export class ClassService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let query = (supabase as any)
         .from("classes")
-        .select("*, class_teacher:profiles(full_name, email)", {
+        .select("*, class_teacher:profiles(first_name, last_name, email)", {
           count: "exact",
         })
         .eq("school_id", schoolId)
@@ -85,7 +85,7 @@ export class ClassService {
       const { data, error } = await (supabase as any)
         .from("classes")
         .select(
-          "*, class_teacher:profiles(full_name, email), subjects:class_subjects(*, subject:subjects(*), teacher:profiles(full_name, email))",
+          "*, class_teacher:profiles(first_name, last_name, email), subjects:class_subjects(*, subject:subjects(*), teacher:profiles(first_name, last_name, email))",
         )
         .eq("id", classId)
         .single();
@@ -269,7 +269,9 @@ export class ClassService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from("class_subjects")
-        .select("*, subject:subjects(*), teacher:profiles(full_name, email)")
+        .select(
+          "*, subject:subjects(*), teacher:profiles(first_name, last_name, email)",
+        )
         .eq("class_id", classId);
 
       if (error) {

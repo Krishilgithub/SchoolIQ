@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ResultService } from "@/lib/services/result";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +58,8 @@ export default function ResultsPage() {
   const getStatusBadge = (status: string) => {
     const variants = {
       draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-      published: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      published:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
     };
     return variants[status as keyof typeof variants] || variants.draft;
   };

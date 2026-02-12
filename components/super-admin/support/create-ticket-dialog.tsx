@@ -115,11 +115,15 @@ export function CreateTicketDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {schools.map((school) => (
-                        <SelectItem key={school.id} value={school.id}>
-                          {school.name}
-                        </SelectItem>
-                      ))}
+                      {schools
+                        .filter(
+                          (school) => school.id && school.id.trim() !== "",
+                        )
+                        .map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

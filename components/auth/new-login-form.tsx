@@ -102,7 +102,7 @@ export function NewLoginForm() {
             redirectUrl = "/dashboard/parent";
             break;
           case "school_admin":
-            redirectUrl = "/dashboard/admin";
+            redirectUrl = "/school-admin/dashboard";
             break;
           case "teacher":
             redirectUrl = "/dashboard"; // Teacher dashboard

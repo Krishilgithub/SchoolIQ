@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { TimetableService } from "@/lib/services/timetable";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,11 +37,16 @@ export default function CreateTimetablePage() {
     setLoading(true);
 
     try {
-      const timetable = await TimetableService.createTimetable({
-        ...formData,
-        school_id: "", // Will be filled by the service from auth context
-        status: "draft",
+      const response = await fetch("/api/timetable", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          school_id: "",
+          status: "draft",
+        }),
       });
+      const timetable = await response.json();
 
       toast({
         title: "Success",
@@ -147,7 +151,9 @@ export default function CreateTimetablePage() {
 
             {/* Academic Year & Duration */}
             <div className="space-y-4 pt-6 border-t">
-              <h3 className="text-lg font-semibold">Academic Year & Duration</h3>
+              <h3 className="text-lg font-semibold">
+                Academic Year & Duration
+              </h3>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -157,7 +163,10 @@ export default function CreateTimetablePage() {
                     type="date"
                     value={formData.effective_from}
                     onChange={(e) =>
-                      setFormData({ ...formData, effective_from: e.target.value })
+                      setFormData({
+                        ...formData,
+                        effective_from: e.target.value,
+                      })
                     }
                     required
                   />

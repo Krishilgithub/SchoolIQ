@@ -72,7 +72,7 @@ export class AuditService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let query = (supabase as any)
         .from("audit_logs")
-        .select("*, profiles(full_name, email)", { count: "exact" })
+        .select("*, profiles(first_name, last_name, email)", { count: "exact" })
         .eq("school_id", schoolId)
         .order("created_at", { ascending: false });
 

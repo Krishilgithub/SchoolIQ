@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { RoomService } from "@/lib/services/room";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +60,13 @@ export default function RoomsPage() {
   const [formData, setFormData] = useState({
     room_number: "",
     room_name: "",
-    room_type: "classroom" as "classroom" | "lab" | "library" | "auditorium" | "sports" | "other",
+    room_type: "classroom" as
+      | "classroom"
+      | "lab"
+      | "library"
+      | "auditorium"
+      | "sports"
+      | "other",
     capacity: 30,
     floor: "",
     building: "",
@@ -75,8 +80,10 @@ export default function RoomsPage() {
   const loadRooms = async () => {
     setLoading(true);
     try {
-      const type = filterType === "all" ? undefined : filterType;
-      const data = await RoomService.getRoomsByType("", type);
+      const params = new URLSearchParams({ schoolId: "" });
+      if (filterType !== "all") params.append("roomType", filterType);
+      const response = await fetch(`/api/rooms?${params}`);
+      const data = await response.json();
       setRooms(data);
     } catch (error) {
       console.error("Error loading rooms:", error);
@@ -89,10 +96,14 @@ export default function RoomsPage() {
     e.preventDefault();
 
     try {
-      await RoomService.createRoom({
-        ...formData,
-        school_id: "", // Will be filled by service
-        is_available: true,
+      await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          school_id: "",
+          is_available: true,
+        }),
       });
 
       toast({
@@ -122,10 +133,13 @@ export default function RoomsPage() {
 
   const getRoomTypeBadge = (type: string) => {
     const variants = {
-      classroom: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+      classroom:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
       lab: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-      library: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-      auditorium: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+      library:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      auditorium:
+        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
       sports: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
       other: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
     };
@@ -265,7 +279,10 @@ export default function RoomsPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                <Button
+                  type="submit"
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
                   Create Room
                 </Button>
               </div>
