@@ -39,22 +39,18 @@ export async function GET(request: NextRequest) {
     
     if (type === 'student_report') {
       const student_id = searchParams.get('student_id');
-      const class_id = searchParams.get('class_id');
       const academic_year_id = searchParams.get('academic_year_id');
       
-      if (!student_id || !class_id) {
+      if (!student_id) {
         return NextResponse.json(
-          { error: 'student_id and class_id are required' },
+          { error: 'student_id is required' },
           { status: 400 }
         );
       }
       
       const report = await getStudentGradeReport(
         student_id,
-        school_id,
-        class_id,
-        academic_year_id,
-        searchParams.get('subject_id') || undefined
+        academic_year_id || undefined
       );
       
       return NextResponse.json(report);
