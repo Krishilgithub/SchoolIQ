@@ -17,13 +17,13 @@ export default function UnauthorizedPage() {
     // Redirect to appropriate dashboard based on role
     if (profile?.is_super_admin) {
       router.push("/super-admin");
-    } else if (profile?.role === "admin" || profile?.role === "school_admin") {
+    } else if (profile?.role === "school_admin") {
       router.push("/dashboard/admin");
     } else if (profile?.role === "teacher") {
       router.push("/dashboard/teacher");
     } else if (profile?.role === "student") {
       router.push("/dashboard/student");
-    } else if (profile?.role === "parent") {
+    } else if (profile?.role === "guardian") {
       router.push("/dashboard/parent");
     } else {
       router.push("/dashboard");

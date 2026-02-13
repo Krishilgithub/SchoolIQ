@@ -83,13 +83,11 @@ export async function PUT(
 
     // Add updated_by
     if (studentData) studentData.updated_by = user.id;
-    if (profileData) profileData.updated_by = user.id;
 
     const student = await StudentManagementService.updateStudent(
       studentId,
       schoolId,
       studentData,
-      profileData,
     );
 
     return NextResponse.json(student);
@@ -132,9 +130,9 @@ export async function DELETE(
       );
     }
 
-    await StudentManagementService.deleteStudent(studentId, schoolId, user.id);
+    await StudentManagementService.deleteStudent(studentId, schoolId);
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting student:", error);
     return NextResponse.json(

@@ -92,7 +92,6 @@ export async function POST(request: NextRequest) {
 
     // Add created_by
     studentData.created_by = user.id;
-    if (profileData) profileData.created_by = user.id;
     if (parentData && Array.isArray(parentData)) {
       parentData.forEach((parent: any) => {
         parent.created_by = user.id;
@@ -101,7 +100,6 @@ export async function POST(request: NextRequest) {
 
     const student = await StudentManagementService.createStudent(
       studentData,
-      profileData,
       parentData,
     );
 

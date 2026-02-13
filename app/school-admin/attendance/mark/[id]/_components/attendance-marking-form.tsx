@@ -29,7 +29,7 @@ interface Student {
 interface AttendanceRecord {
   student_id: string;
   status: string;
-  remarks?: string;
+  remarks?: string | null;
 }
 
 interface AttendanceMarkingFormProps {
