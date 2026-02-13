@@ -8,7 +8,7 @@ interface StudentProfilePageProps {
   };
 }
 
-export default function StudentProfilePage({
+export default async function StudentProfilePage({
   params,
 }: StudentProfilePageProps) {
   const resolvedParams = await params;

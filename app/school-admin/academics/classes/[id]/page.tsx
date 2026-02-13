@@ -19,7 +19,8 @@ interface ClassDetailsPageProps {
 export default async function ClassDetailsPage({
   params,
 }: ClassDetailsPageProps) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   const schoolId = await getCurrentSchoolId();
   const { class: classData, error } = await ClassService.getClass(id);
 
