@@ -61,16 +61,22 @@ export async function POST(request: NextRequest) {
     }
     
     if (action === 'bulk_grade') {
-      const { grades } = body;
+      const { assignment_id, grades, graded_by, school_id, total_marks } = body;
       
-      if (!grades || !Array.isArray(grades)) {
+      if (!assignment_id || !grades || !Array.isArray(grades) || !graded_by || !school_id || !total_marks) {
         return NextResponse.json(
-          { error: 'grades array is required' },
+          { error: 'assignment_id, grades array, graded_by, school_id, and total_marks are required' },
           { status: 400 }
         );
       }
       
-      const result = await bulkGrade(grades);
+      const result = await bulkGrade({
+        assignment_id,
+        grades,
+        graded_by,
+        school_id,
+        total_marks
+      });
       return NextResponse.json(result);
     }
     
