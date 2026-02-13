@@ -27,11 +27,12 @@ export default async function TeacherProfilePage({
   const schoolId = await getCurrentSchoolId();
   if (!schoolId) redirect("/auth/login");
 
+  const resolvedParams = await params;
   const supabase = await createClient();
   const { data: teacher, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", resolvedParams.id)
     .eq("school_id", schoolId)
     .eq("role", "teacher")
     .single();

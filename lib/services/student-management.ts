@@ -70,7 +70,6 @@ export class StudentManagementService {
         `
         *,
         student_guardians!student_guardians_student_id_fkey(
-          id,
           relationship,
           is_primary,
           is_emergency_contact,

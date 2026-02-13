@@ -11,5 +11,6 @@ interface StudentProfilePageProps {
 export default function StudentProfilePage({
   params,
 }: StudentProfilePageProps) {
-  return <StudentProfileClient studentId={params.id} />;
+  const resolvedParams = await params;
+  return <StudentProfileClient studentId={resolvedParams.id} />;
 }

@@ -487,10 +487,12 @@ export async function getRiskAlerts(
  */
 export async function generateAttendanceReport(
   schoolId: string,
-  dateFrom: string,
-  dateTo: string,
+  academicYearId: string,
+  dateFrom?: string,
+  dateTo?: string,
   classId?: string,
-  sectionId?: string
+  sectionId?: string,
+  studentId?: string
 ): Promise<{
   summary: {
     total_days: number;
@@ -511,8 +513,15 @@ export async function generateAttendanceReport(
     .from('attendance_sessions')
     .select('session_date, total_students, present_count, absent_count, late_count')
     .eq('school_id', schoolId)
-    .gte('session_date', dateFrom)
-    .lte('session_date', dateTo);
+    .eq('academic_year_id', academicYearId);
+  
+  if (dateFrom) {
+    query = query.gte('session_date', dateFrom);
+  }
+  
+  if (dateTo) {
+    query = query.lte('session_date', dateTo);
+  }
   
   if (classId) {
     query = query.eq('class_id', classId);
@@ -530,6 +539,10 @@ export async function generateAttendanceReport(
   
   const sessionsList = sessions || [];
   
+  // Set default date range if not provided
+  const defaultFrom = dateFrom || new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+  const defaultTo = dateTo || new Date().toISOString().split('T')[0];
+  
   // Calculate summary
   const uniqueDates = new Set(sessionsList.map(s => s.session_date)).size;
   const totalStudentsMarked = sessionsList.reduce((sum, s) => sum + (s.total_students || 0), 0);
@@ -542,10 +555,10 @@ export async function generateAttendanceReport(
     : 0;
   
   // Get class averages
-  const classAverages = await getClassAverages(schoolId, dateFrom, dateTo);
+  const classAverages = await getClassAverages(schoolId, defaultFrom, defaultTo);
   
   // Get trends
-  const trends = await getAttendanceTrends(schoolId, dateFrom, dateTo, 'day', classId);
+  const trends = await getAttendanceTrends(schoolId, defaultFrom, defaultTo, 'day', classId);
   
   // Get risk students
   const riskStudents = await getRiskAlerts(schoolId, '', 80, 85, 90);

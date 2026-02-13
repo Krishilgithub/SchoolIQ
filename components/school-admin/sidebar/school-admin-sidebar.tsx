@@ -59,12 +59,21 @@ export function SchoolAdminSidebar() {
   };
 
   return (
-    <div className="flex h-full w-[280px] flex-col bg-gradient-to-b from-white via-white to-orange-50/30 border-r border-gray-200/80 shadow-xl">
+    <div
+      className="flex h-full w-[280px] flex-col bg-gradient-to-b from-white via-white to-orange-50/30 border-r border-gray-200/80 shadow-xl"
+      suppressHydrationWarning={true}
+    >
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] via-transparent to-transparent pointer-events-none" />
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] via-transparent to-transparent pointer-events-none"
+        suppressHydrationWarning={true}
+      />
 
       {/* Header */}
-      <div className="flex h-16 items-center px-6 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/30 relative z-10">
+      <div
+        className="flex h-16 items-center px-6 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/30 relative z-10"
+        suppressHydrationWarning={true}
+      >
         <Logo />
         <motion.span
           className="ml-2 bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-sm font-bold text-transparent"
@@ -74,7 +83,7 @@ export function SchoolAdminSidebar() {
         >
           School Admin
         </motion.span>
-        <div className="ml-auto">
+        <div className="ml-auto" suppressHydrationWarning={true}>
           <NotificationCenter
             unreadCount={unreadCount}
             onUnreadCountChange={refreshCount}
@@ -83,7 +92,7 @@ export function SchoolAdminSidebar() {
       </div>
 
       {/* Search */}
-      <div className="pt-3">
+      <div className="pt-3" suppressHydrationWarning={true}>
         <SidebarSearch
           value={searchQuery}
           onChange={setSearchQuery}
@@ -92,7 +101,10 @@ export function SchoolAdminSidebar() {
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-2 px-3 [&::-webkit-scrollbar]:hidden relative z-10">
+      <div
+        className="flex-1 overflow-y-auto py-2 px-3 [&::-webkit-scrollbar]:hidden relative z-10"
+        suppressHydrationWarning={true}
+      >
         {filteredNavigation.length > 0 ? (
           filteredNavigation.map((group, index) => (
             <motion.div
@@ -105,7 +117,10 @@ export function SchoolAdminSidebar() {
             </motion.div>
           ))
         ) : (
-          <div className="px-3 py-8 text-center text-sm text-gray-400">
+          <div
+            className="px-3 py-8 text-center text-sm text-gray-400"
+            suppressHydrationWarning={true}
+          >
             No results found for &ldquo;{searchQuery}&rdquo;
           </div>
         )}
@@ -125,7 +140,7 @@ export function SchoolAdminSidebar() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="relative">
+              <div className="relative" suppressHydrationWarning={true}>
                 <Avatar className="h-10 w-10 border-2 border-white shadow-md ring-2 ring-orange-100/50">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold text-sm">
@@ -138,7 +153,10 @@ export function SchoolAdminSidebar() {
                   transition={{ repeat: Infinity, duration: 2 }}
                 />
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div
+                className="flex-1 overflow-hidden"
+                suppressHydrationWarning={true}
+              >
                 <p className="truncate text-sm font-semibold text-gray-900">
                   {user?.user_metadata?.full_name || "Admin"}
                 </p>

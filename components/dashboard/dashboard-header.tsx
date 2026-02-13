@@ -25,10 +25,19 @@ export function DashboardHeader() {
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header
+      className="sticky top-0 z-40 w-full border-b bg-white px-6 py-4"
+      suppressHydrationWarning={true}
+    >
+      <div
+        className="flex items-center justify-between"
+        suppressHydrationWarning={true}
+      >
         {/* Left: Mobile Menu & Breadcrumb/Title */}
-        <div className="flex items-center gap-4">
+        <div
+          className="flex items-center gap-4"
+          suppressHydrationWarning={true}
+        >
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden">
@@ -41,7 +50,10 @@ export function DashboardHeader() {
             </SheetContent>
           </Sheet>
 
-          <div className="flex items-center gap-2 text-sm text-neutral-500">
+          <div
+            className="flex items-center gap-2 text-sm text-neutral-500"
+            suppressHydrationWarning={true}
+          >
             <span className="hidden sm:inline">Maham</span>
             <span className="hidden sm:inline text-neutral-300">›</span>
             <span className="font-semibold text-neutral-900 flex items-center gap-2">
@@ -52,9 +64,15 @@ export function DashboardHeader() {
         </div>
 
         {/* Right: Search & Actions */}
-        <div className="flex items-center gap-4">
+        <div
+          className="flex items-center gap-4"
+          suppressHydrationWarning={true}
+        >
           {/* Search Bar */}
-          <div className="relative hidden md:block">
+          <div
+            className="relative hidden md:block"
+            suppressHydrationWarning={true}
+          >
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
             <Input
               placeholder="Search..."
@@ -62,7 +80,10 @@ export function DashboardHeader() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2"
+            suppressHydrationWarning={true}
+          >
             <Button
               variant="ghost"
               size="icon"
@@ -90,8 +111,8 @@ export function DashboardHeader() {
       </div>
 
       {/* Mobile Search - Visible only on small screens below header */}
-      <div className="mt-4 md:hidden pb-2">
-        <div className="relative">
+      <div className="mt-4 md:hidden pb-2" suppressHydrationWarning={true}>
+        <div className="relative" suppressHydrationWarning={true}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <Input
             placeholder="Search..."

@@ -25,13 +25,14 @@ export default async function MarkClassAttendancePage({
     redirect("/auth/login");
   }
 
+  const resolvedParams = await params;
   const supabase = await createClient();
 
   // Get class details
   const { data: classData, error: classError } = await supabase
     .from("classes")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", resolvedParams.id)
     .eq("school_id", schoolId)
     .single();
 
@@ -53,7 +54,7 @@ export default async function MarkClassAttendancePage({
         admission_number
       )
     `)
-    .eq("section_id", params.id)
+    .eq("section_id", resolvedParams.id)
     .eq("status", "active");
 
   if (enrollmentsError) {
@@ -73,7 +74,7 @@ export default async function MarkClassAttendancePage({
   const { data: existingAttendanceData } = await supabase
     .from("student_attendance")
     .select("*")
-    .eq("class_id", params.id)
+    .eq("class_id", resolvedParams.id)
     .eq("date", today);
 
   // Map to simpler structure
@@ -109,7 +110,7 @@ export default async function MarkClassAttendancePage({
             </div>
           ) : (
             <AttendanceMarkingForm
-              classId={params.id}
+              classId={resolvedParams.id}
               students={students}
               existingAttendance={existingAttendance}
               date={today}

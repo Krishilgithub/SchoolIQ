@@ -59,7 +59,11 @@ export function CreateEventModal({
   onOpenChange,
   defaultDate,
 }: CreateEventModalProps) {
-  const { schoolId, loading: schoolLoading, error: schoolError } = useCurrentSchool();
+  const {
+    schoolId,
+    loading: schoolLoading,
+    error: schoolError,
+  } = useCurrentSchool();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -75,7 +79,7 @@ export function CreateEventModal({
         schoolId,
         schoolLoading,
         schoolError,
-        mounted
+        mounted,
       });
     }
   }, [open, schoolId, schoolLoading, schoolError, mounted]);
@@ -104,7 +108,7 @@ export function CreateEventModal({
     try {
       console.log("Creating event with data:", data);
       console.log("School ID:", schoolId);
-      
+
       await eventsService.createEvent(schoolId, data);
       toast.success("Event created successfully");
       queryClient.invalidateQueries({ queryKey: ["school-events"] });
@@ -112,21 +116,26 @@ export function CreateEventModal({
       form.reset();
     } catch (error) {
       console.error("Error creating event:", error);
-      
+
       let errorMessage = "Failed to create event";
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       // Provide specific feedback for common issues
-      if (errorMessage.includes("Unauthorized") || errorMessage.includes("403")) {
-        errorMessage = "You don't have permission to create events. Please contact your administrator.";
+      if (
+        errorMessage.includes("Unauthorized") ||
+        errorMessage.includes("403")
+      ) {
+        errorMessage =
+          "You don't have permission to create events. Please contact your administrator.";
       } else if (errorMessage.includes("School not found")) {
-        errorMessage = "School information not found. Please refresh and try again.";
+        errorMessage =
+          "School information not found. Please refresh and try again.";
       } else if (errorMessage.includes("validation")) {
         errorMessage = "Please check all required fields are filled correctly.";
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -144,9 +153,7 @@ export function CreateEventModal({
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle>Add New Event</DialogTitle>
-            <DialogDescription>
-              Loading school information...
-            </DialogDescription>
+            <DialogDescription>Loading school information...</DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -163,9 +170,7 @@ export function CreateEventModal({
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle>Add New Event</DialogTitle>
-            <DialogDescription>
-              Unable to create event
-            </DialogDescription>
+            <DialogDescription>Unable to create event</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-red-600">

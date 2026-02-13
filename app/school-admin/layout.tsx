@@ -32,17 +32,34 @@ export default async function SchoolAdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-neutral-50 overflow-hidden">
+    <div
+      className="flex min-h-screen bg-neutral-50 overflow-hidden"
+      suppressHydrationWarning={true}
+    >
       {/* Fixed Sidebar */}
-      <aside className="hidden w-[280px] flex-col border-r bg-white fixed inset-y-0 left-0 z-50 lg:flex">
+      <aside
+        className="hidden w-[280px] flex-col border-r bg-white fixed inset-y-0 left-0 z-50 lg:flex"
+        suppressHydrationWarning={true}
+      >
         <SchoolAdminSidebar />
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col lg:pl-[280px] h-screen overflow-hidden">
+      <div
+        className="flex flex-1 flex-col lg:pl-[280px] h-screen overflow-hidden"
+        suppressHydrationWarning={true}
+      >
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">
-          <div className="mx-auto max-w-7xl w-full">{children}</div>
+        <main
+          className="flex-1 overflow-y-auto overflow-x-hidden p-6"
+          suppressHydrationWarning={true}
+        >
+          <div
+            className="mx-auto max-w-7xl w-full"
+            suppressHydrationWarning={true}
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>
