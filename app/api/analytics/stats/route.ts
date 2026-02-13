@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         );
       }
       
-      const stats = await calculateClassAverage(assignment_id, school_id);
+      const stats = await calculateClassAverage(assignment_id);
       return NextResponse.json(stats);
     }
     
