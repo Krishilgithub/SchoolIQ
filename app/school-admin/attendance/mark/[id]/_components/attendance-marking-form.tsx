@@ -51,18 +51,18 @@ export function AttendanceMarkingForm({
   const [isPending, startTransition] = useTransition();
 
   // Initialize attendance state
-  const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>(
-    () => {
-      const initial: Record<string, AttendanceStatus> = {};
-      students.forEach((student) => {
-        const existing = existingAttendance.find(
-          (a) => a.student_id === student.id
-        );
-        initial[student.id] = (existing?.status as AttendanceStatus) || "present";
-      });
-      return initial;
-    }
-  );
+  const [attendance, setAttendance] = useState<
+    Record<string, AttendanceStatus>
+  >(() => {
+    const initial: Record<string, AttendanceStatus> = {};
+    students.forEach((student) => {
+      const existing = existingAttendance.find(
+        (a) => a.student_id === student.id,
+      );
+      initial[student.id] = (existing?.status as AttendanceStatus) || "present";
+    });
+    return initial;
+  });
 
   const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
     setAttendance((prev) => ({
@@ -89,7 +89,7 @@ export function AttendanceMarkingForm({
             class_id: classId,
             date,
             status: attendance[student.id] || "present",
-          })
+          }),
         );
 
         await Promise.all(promises);
@@ -200,24 +200,34 @@ export function AttendanceMarkingForm({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
-                  {(["present", "absent", "late", "excused"] as AttendanceStatus[]).map(
-                    (status) => (
-                      <Button
-                        key={status}
-                        size="sm"
-                        variant={attendance[student.id] === status ? "default" : "outline"}
-                        className={cn(
-                          "capitalize",
-                          attendance[student.id] === status && getStatusColor(status)
-                        )}
-                        onClick={() => handleStatusChange(student.id, status)}
-                        disabled={isPending}
-                      >
-                        {getStatusIcon(status)}
-                        <span className="ml-1">{status}</span>
-                      </Button>
-                    )
-                  )}
+                  {(
+                    [
+                      "present",
+                      "absent",
+                      "late",
+                      "excused",
+                    ] as AttendanceStatus[]
+                  ).map((status) => (
+                    <Button
+                      key={status}
+                      size="sm"
+                      variant={
+                        attendance[student.id] === status
+                          ? "default"
+                          : "outline"
+                      }
+                      className={cn(
+                        "capitalize",
+                        attendance[student.id] === status &&
+                          getStatusColor(status),
+                      )}
+                      onClick={() => handleStatusChange(student.id, status)}
+                      disabled={isPending}
+                    >
+                      {getStatusIcon(status)}
+                      <span className="ml-1">{status}</span>
+                    </Button>
+                  ))}
                 </div>
               </TableCell>
             </TableRow>
